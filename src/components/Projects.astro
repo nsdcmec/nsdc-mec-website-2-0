@@ -1,0 +1,57 @@
+---
+// src/components/Projects.astro
+import type { Project } from "../types";
+
+interface Props {
+  projects: Project[];
+  isPreview?: boolean;
+}
+
+const { projects, isPreview } = Astro.props;
+const displayProjects = isPreview ? projects.slice(0, 3) : projects;
+---
+
+<section class="py-16 lg:py-20 bg-[#FAF9F6]">
+  <div class="px-4">
+    <div class="flex justify-between items-center mb-8">
+      <h2 class="text-4xl lg:text-5xl font-bold text-gray-900">Projects</h2>
+    </div>
+    {
+      displayProjects.length > 0 ? (
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 w-full">
+          {displayProjects.map((project) => (
+            <div class="w-full">
+              <a href={project.link || "#"} target="_blank" rel="noopener noreferrer">
+                <div class="w-full mb-4 overflow-hidden">
+                  <img
+                    src={project.img}
+                    alt={project.title}
+                    class="w-full h-auto object-cover aspect-square"
+                  />
+                </div>
+                <h3 class="text-xl font-bold text-gray-900">{project.title}</h3>
+                <p class="mt-1 text-sm text-gray-600 leading-relaxed">{project.desc}</p>
+              </a>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p class="text-center text-gray-500 py-10">
+          No projects to display yet.
+        </p>
+      )
+    }
+    {
+      isPreview && projects.length > 3 && (
+        <div class="mt-10 text-center">
+          
+            href="/projects"
+            class="inline-block py-3 px-8 text-sm font-bold bg-gray-900 text-white rounded-md hover:bg-black transition-colors"
+          >
+            View All Projects
+          </a>
+        </div>
+      )
+    }
+  </div>
+</section>

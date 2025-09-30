@@ -1,0 +1,48 @@
+---
+// src/components/Reports.astro
+import type { Report } from "../types";
+
+interface Props {
+  reports: Report[];
+}
+
+const { reports } = Astro.props;
+---
+
+<section class="py-16 lg:py-24 bg-white">
+  <div class="px-4">
+    <h2 class="text-lg font-semibold text-gray-800 mb-10">Reports</h2>
+    {
+      reports.length > 0 ? (
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {reports.map((report) => (
+            <div class="flex flex-col h-full bg-gray-50 overflow-hidden border border-gray-200/80">
+              <div class="relative w-full aspect-square">
+                <img
+                  src={report.img}
+                  alt={report.title}
+                  class="w-full h-full object-cover grayscale"
+                />
+                <div class="absolute inset-0 bg-gradient-to-t from-white via-50% to-transparent" />
+              </div>
+              <div class="flex flex-col flex-grow p-6 z-10 -mt-24">
+                <h3 class="text-xl font-semibold text-gray-900">{report.title}</h3>
+                <p class="mt-2 text-sm text-gray-600 flex-grow">{report.desc}</p>
+                <div class="mt-6">
+                  
+                    href={"/report/" + report.id}
+                    class="inline-block py-2 px-5 text-sm font-medium bg-gray-900 text-white hover:bg-black transition-colors"
+                  >
+                    View Report
+                  </a>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p class="text-center text-gray-500">No reports to display.</p>
+      )
+    }
+  </div>
+</section>

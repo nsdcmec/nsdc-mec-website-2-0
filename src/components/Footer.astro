@@ -1,0 +1,84 @@
+---
+// src/components/Footer.astro
+import ThemeToggle from "./ThemeToggle"; // This is still the React component
+import type { LinkColumn } from "@/types";
+
+interface Props {
+  links: LinkColumn[];
+}
+
+const { links } = Astro.props;
+
+// Data that was hardcoded in the original component
+const staticLinkColumns: LinkColumn[] = [
+  {
+    title: "Connect",
+    links: [
+      { name: "LinkedIn", href: "https://www.linkedin.com/company/nsdc-mec/" },
+      { name: "Instagram", href: "https://www.instagram.com/nsdcmec/" },
+      { name: "GitHub", href: "https://github.com/nsdcmEC" },
+      { name: "Email", href: "mailto:nsdc@mec.ac.in" },
+    ],
+  },
+  {
+    title: "Resources",
+    links: [{ name: "NSDC Headquarters", href: "https://nebigdatahub.org/nsdc" }],
+  },
+];
+
+const allColumns = [...links, ...staticLinkColumns];
+---
+
+<footer class="bg-white overflow-hidden w-full">
+  <div class="md:py-24 py-12 flex flex-col md:flex-row justify-between gap-16 px-8 w-full">
+    <div class="flex-shrink-0">
+      <img src="/logo.png" alt="NSDC MEC Logo" width="100" height="100" class="md:h-24 h-12 w-auto" />
+    </div>
+    <div class="flex flex-wrap justify-end gap-x-8 gap-y-12">
+      {
+        allColumns.map((column) => (
+          <div
+            class="flex flex-col space-y-4 items-end w-40"
+          >
+            <h3 class="font-semibold tracking-wider uppercase text-sm text-gray-800 text-right">
+              {column.title}
+            </h3>
+            <div class="flex flex-col space-y-3 w-full items-end">
+              {column.links.map((link) => (
+                <a
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="relative w-fit group text-gray-700 hover:text-black transition-colors duration-300"
+                  title={link.desc}
+                >
+                  <span>{link.name}</span>
+                  <span class="absolute bottom-0 right-0 h-[1px] w-full bg-black transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover:scale-x-100 group-hover:origin-right" />
+                </a>
+              ))}
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+
+  <div class="relative h-48 w-full">
+    <div class="absolute top-4 left-4 flex flex-col space-y-4 items-center md:top-0 md:bottom-4 md:justify-center">
+      <!-- Here we render the React component as an interactive island -->
+      <ThemeToggle client:visible />
+      <div class="text-sm text-gray-500">
+        &copy; {new Date().getFullYear()} NSDC MEC
+      </div>
+    </div>
+
+    <div
+      aria-hidden="true"
+      class="absolute bottom-0 right-0 translate-x-1/64 translate-y-1/4 scale-y-160 select-none pointer-events-none"
+    >
+      <p class="text-right text-[clamp(2rem,18vw,16rem)] leading-none font-bold text-black whitespace-nowrap">
+        NSDCMEC
+      </p>
+    </div>
+  </div>
+</footer>
