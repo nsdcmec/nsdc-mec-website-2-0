@@ -1,28 +1,16 @@
+# docker-compose.yml (Base file for production)
 services:
-  # This single service will run our unified container
-  nsdc-render-test:
-    container_name: nsdc-render-test
-    build:
-      context: .
-      dockerfile: Dockerfile.render
-      args:
-        # --- BUILD ARGS ---
-        # This section reads values from your .env file (or your shell)
-        # and passes them to the ARG instructions in Dockerfile.render.
-        - MOCK_HERO_URL=${MOCK_HERO_URL}
-        - MOCK_ANNOUNCEMENTS_URL=${MOCK_ANNOUNCEMENTS_URL}
-        - MOCK_ABOUT_URL=${MOCK_ABOUT_URL}
-        - MOCK_EVENTS_URL=${MOCK_EVENTS_URL}
-        - MOCK_PROJECTS_URL=${MOCK_PROJECTS_URL}
-        - MOCK_RESOURCES_URL=${MOCK_RESOURCES_URL}
-        - MOCK_TEAMS_URL=${MOCK_TEAMS_URL}
-        - MOCK_TEAM_PREVIEW_URL=${MOCK_TEAM_PREVIEW_URL}
-        - MOCK_LINKS_URL=${MOCK_LINKS_URL}
-    ports:
-      # Expose the Nginx port so you can see the website
-      - "8080:8080"
+  nsdc-website:
+    build: .
+    container_name: nsdc-website-autodeploy
+    restart: unless-stopped
     environment:
-      # --- RUNTIME ENV VARS ---
-      # These are passed to the running container for the listener.js script to use.
+      # These variables tell the college's reverse proxy how to route traffic
+      - VIRTUAL_HOST=nsdc.mec.ac.in
+      - VIRTUAL_PORT=80 # Nginx runs on port 80 internally
+      # The WEBHOOK_SECRET is passed in at runtime for security
       - WEBHOOK_SECRET=${WEBHOOK_SECRET}
-      - RENDER_DEPLOY_HOOK_URL=${RENDER_DEPLOY_HOOK_URL}
+    volumes:
+      # This is ESSENTIAL for the 'git pull' strategy to work.
+      # It links the host directory to the container's working directory.
+      - .:/app
