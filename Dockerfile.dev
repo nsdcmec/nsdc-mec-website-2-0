@@ -1,0 +1,16 @@
+# Dockerfile.dev
+
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy package files and install all dependencies
+COPY package*.json ./
+RUN npm install
+
+# Copy the rest of your app's source code
+COPY . .
+
+# The default command is to start the development server.
+# This will be overridden in docker-compose for clarity, but it's good practice to have it here.
+CMD ["npm", "run", "dev"]

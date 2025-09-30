@@ -1,0 +1,14 @@
+# docker-compose.override.yml (FINAL for Local Testing)
+# This file adds port mappings for convenience on your local machine.
+# DO NOT use this file in the final production deployment.
+
+services:
+  nsdc-app:
+    ports:
+      # Exposes the Nginx server on your computer's port 8080.
+      - "8080:80"
+
+  webhook-listener:
+    ports:
+      # Exposes the webhook listener on your computer's port 9001 for testing with curl.
+      - "9001:9001"

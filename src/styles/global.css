@@ -1,0 +1,160 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+:root {
+  --background: #dfeeff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #dfeeff;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+.animate-slide-in {
+  animation: slide-in forwards;
+}
+
+@keyframes shuffle {
+  0%,
+  100% {
+    transform: scale(0.8) rotate(0deg);
+    opacity: 0.8;
+  }
+  25% {
+    transform: scale(1.1) rotate(45deg);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.8) rotate(90deg);
+    opacity: 0.8;
+  }
+  75% {
+    transform: scale(1.1) rotate(135deg);
+    opacity: 1;
+  }
+}
+
+.animate-shuffle {
+  animation: shuffle 2s infinite ease-in-out;
+}
+
+@keyframes shuffle-1 {
+  0%,
+  49% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(0, -30px);
+  } /* Move Up */
+  75% {
+    transform: translate(112px, -30px);
+  } /* Move Right 4 spots */
+  88%,
+  100% {
+    transform: translate(112px, 0);
+  } /* Move Down */
+}
+
+/* Keyframes for Block 2 (Swaps with Block 4) */
+@keyframes shuffle-2 {
+  0% {
+    transform: translate(0, 0);
+  }
+  12% {
+    transform: translate(0, -30px);
+  } /* Move Up */
+  38% {
+    transform: translate(56px, -30px);
+  } /* Move Right 2 spots */
+  50%,
+  100% {
+    transform: translate(56px, 0);
+  } /* Move Down */
+}
+
+/* Keyframes for Block 3 (Stays in the middle) */
+@keyframes shuffle-3 {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+/* Keyframes for Block 4 (Swaps with Block 2) */
+@keyframes shuffle-4 {
+  0% {
+    transform: translate(0, 0);
+  }
+  12% {
+    transform: translate(0, 30px);
+  } /* Move Down */
+  38% {
+    transform: translate(-56px, 30px);
+  } /* Move Left 2 spots */
+  50%,
+  100% {
+    transform: translate(-56px, 0);
+  } /* Move Up */
+}
+
+/* Keyframes for Block 5 (Swaps with Block 1) */
+@keyframes shuffle-5 {
+  0%,
+  49% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(0, 30px);
+  } /* Move Down */
+  75% {
+    transform: translate(-112px, 30px);
+  } /* Move Left 4 spots */
+  88%,
+  100% {
+    transform: translate(-112px, 0);
+  } /* Move Up */
+}
+
+/* Applying the animations to each block */
+.animate-shuffle-1 {
+  animation: shuffle-1 4s infinite ease-in-out;
+}
+.animate-shuffle-2 {
+  animation: shuffle-2 4s infinite ease-in-out;
+}
+.animate-shuffle-3 {
+  animation: shuffle-3 4s infinite ease-in-out;
+}
+.animate-shuffle-4 {
+  animation: shuffle-4 4s infinite ease-in-out;
+}
+.animate-shuffle-5 {
+  animation: shuffle-5 4s infinite ease-in-out;
+}
+
