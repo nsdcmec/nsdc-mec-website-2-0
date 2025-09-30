@@ -1,0 +1,95 @@
+[
+  {
+    "id": "event-1",
+    "relation": "ml-workshop-2024",
+    "date": "OCT 15, 2024",
+    "title": "Machine Learning Foundations",
+    "desc": "A hands-on workshop covering the fundamentals of machine learning and practical applications.",
+    "img": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=2070&auto=format&fit=crop",
+    "isArchived": false,
+    "tags": [
+      "Machine Learning",
+      "Data Science",
+      "Python",
+      "Pandas",
+      "NumPy",
+      "Scikit-learn",
+      "TensorFlow",
+      "Keras"
+    ],
+    "link": "#"
+  },
+  {
+    "id": "event-2",
+    "relation": "data-viz-2024",
+    "date": "NOV 05, 2024",
+    "title": "Data Visualization with Tableau",
+    "desc": "Learn to create compelling visualizations and dashboards using Tableau.",
+    "img": "https://images.unsplash.com/photo-1563986768609-322da13575f3?q=80&w=2070&auto=format&fit=crop",
+    "isArchived": false,
+    "link": ""
+  },
+  {
+    "id": "event-3",
+    "relation": "intro-ds-2023",
+    "date": "DEC 20, 2023",
+    "title": "Introduction to Data Science",
+    "desc": "Our inaugural event introducing the core concepts of data science to students.",
+    "img": "https://images.unsplash.com/photo-1573164713988-8665fc963095?q=80&w=2069&auto=format&fit=crop",
+    "isArchived": true
+  },
+  {
+    "id": "event-4",
+    "relation": "python-bootcamp-2023",
+    "date": "NOV 10, 2023",
+    "title": "Python for Data Analysis Bootcamp",
+    "desc": "An intensive bootcamp focused on using Python libraries like Pandas and NumPy for data manipulation.",
+    "img": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=2070&auto=format&fit=crop",
+    "isArchived": true
+  },
+  {
+    "id": "event-5",
+    "relation": "sql-basics-2023",
+    "date": "OCT 02, 2023",
+    "title": "SQL for Beginners",
+    "desc": "A beginner-friendly session on writing SQL queries for data extraction and analysis from relational databases.",
+    "img": "https://images.unsplash.com/photo-1522252234503-e356532cafd5?q=80&w=1925&auto=format&fit=crop",
+    "isArchived": true
+  },
+  {
+    "id": "event-6",
+    "relation": "cloud-talk-2023",
+    "date": "SEP 15, 2023",
+    "title": "Tech Talk: Data in the Cloud",
+    "desc": "An invited talk from an industry expert on cloud computing services for data storage and processing.",
+    "img": "https://images.unsplash.com/photo-1534972195531-d756b9bfa9f2?q=80&w=2070&auto=format&fit=crop",
+    "isArchived": true
+  },
+  {
+    "id": "event-7",
+    "relation": "career-resume-2023",
+    "date": "AUG 21, 2023",
+    "title": "Career Session: Resume Building",
+    "desc": "Workshop on how to build a data-science-focused resume that stands out to recruiters.",
+    "img": "https://images.unsplash.com/photo-1586281380349-632531db7ed4?q=80&w=2070&auto=format&fit=crop",
+    "isArchived": true
+  },
+  {
+    "id": "event-8",
+    "relation": "git-github-2023",
+    "date": "JUL 30, 2023",
+    "title": "Git & GitHub for Beginners",
+    "desc": "Learn version control essentials with Git and how to collaborate on projects using GitHub.",
+    "img": "https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?q=80&w=2070&auto=format&fit=crop",
+    "isArchived": true
+  },
+  {
+    "id": "event-9",
+    "relation": "networking-mixer-2023",
+    "date": "JUN 12, 2023",
+    "title": "Student-Alumni Networking Mixer",
+    "desc": "An evening for students to connect with alumni working in the data industry and learn from their experiences.",
+    "img": "https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=2070&auto=format&fit=crop",
+    "isArchived": true
+  }
+]
