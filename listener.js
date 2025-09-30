@@ -1,51 +1,52 @@
-// listener.js
+// listener.js (Updated for Render)
 import express from "express";
-import { exec } from "child_process";
 import crypto from "crypto";
 
 const app = express();
-const PORT = 9001;
-const WEBHOOK_SECRET = "your-super-secret-string"; // IMPORTANT: Keep this the same
+const PORT = 9001; // Internal port, not exposed to the public
+const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
+const RENDER_DEPLOY_HOOK_URL = process.env.RENDER_DEPLOY_HOOK_URL;
+
+if (!WEBHOOK_SECRET || !RENDER_DEPLOY_HOOK_URL) {
+  console.error(
+    "FATAL: WEBHOOK_SECRET and RENDER_DEPLOY_HOOK_URL must be set.",
+  );
+  process.exit(1);
+}
 
 app.use(express.json());
 
 app.post("/webhook", (req, res) => {
   console.log("Webhook received...");
-
-  // --- Security Check ---
+  // Security check remains the same...
   const signature = req.headers["x-hub-signature-256"];
-  if (!signature) {
-    return res.status(401).send("Signature required.");
-  }
-
+  if (!signature) return res.status(401).send("Signature required.");
   const hmac = crypto.createHmac("sha256", WEBHOOK_SECRET);
   const digest =
     "sha256=" + hmac.update(JSON.stringify(req.body)).digest("hex");
-
-  // Use crypto.timingSafeEqual to prevent timing attacks
   if (!crypto.timingSafeEqual(Buffer.from(digest), Buffer.from(signature))) {
     return res.status(401).send("Invalid signature.");
   }
 
-  console.log("Signature verified. Starting deployment process...");
+  console.log("Signature verified. Triggering Render deploy hook...");
 
-  // --- Execution Command ---
-  const command = " npm install && npm run build";
-
-  exec(command, (error, stdout, stderr) => {
-    if (error) {
-      console.error(`Execution error: ${error.message}`);
-      return res.status(500).send(`Deployment failed: ${error.message}`);
-    }
-    if (stderr) {
-      console.error(`Stderr: ${stderr}`);
-    }
-    console.log(`Stdout: ${stdout}`);
-    console.log("✅ Deployment successful! The site has been updated.");
-    res.status(200).send("Deployment successful!");
-  });
+  // THE NEW LOGIC: Instead of exec, we call the deploy hook.
+  fetch(RENDER_DEPLOY_HOOK_URL)
+    .then((hookRes) => {
+      if (hookRes.ok) {
+        console.log("✅ Successfully triggered Render deployment.");
+        res.status(200).send("Deployment triggered successfully!");
+      } else {
+        console.error(`Failed to trigger Render hook: ${hookRes.statusText}`);
+        res.status(500).send("Failed to trigger deployment.");
+      }
+    })
+    .catch((err) => {
+      console.error("Error calling Render deploy hook:", err);
+      res.status(500).send("Error triggering deployment.");
+    });
 });
 
-app.listen(PORT, () => {
-  console.log(`Webhook listener started on port ${PORT}`);
+app.listen(PORT, "127.0.0.1", () => {
+  console.log(`Internal webhook listener started on port ${PORT}`);
 });
