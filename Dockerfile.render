@@ -4,7 +4,6 @@
 FROM node:20-alpine
 
 # ---- Install System Dependencies ----
-# Install Nginx for serving files and Supervisor for managing processes
 RUN apk add --no-cache nginx supervisor
 
 # ---- Setup Application ----
@@ -15,9 +14,9 @@ RUN npm install
 # Copy all application code
 COPY . .
 
-# ---- Build Static Site ----
-# Run the Astro build. This will now fetch data from your Gist URLs.
-# You must provide the URLs as build arguments.
+# ---- Define Build-time Arguments ----
+# These ARG lines declare that our build expects these variables.
+# They will be populated by docker-compose from the .env file.
 ARG MOCK_HERO_URL
 ARG MOCK_ANNOUNCEMENTS_URL
 ARG MOCK_ABOUT_URL
@@ -28,17 +27,16 @@ ARG MOCK_TEAMS_URL
 ARG MOCK_TEAM_PREVIEW_URL
 ARG MOCK_LINKS_URL
 
+# ---- Build Static Site ----
+# The `npm run build` process will now have access to these environment variables.
 RUN npm run build
 
 # ---- Configure Nginx & Supervisor ----
-# Copy our custom config files into the container
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # ---- Expose Port ----
-# Nginx will listen on port 8080
 EXPOSE 8080
 
 # ---- Start Supervisor ----
-# This command starts Supervisor, which in turn starts Nginx and our Node listener.
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
