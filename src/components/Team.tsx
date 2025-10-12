@@ -5,7 +5,7 @@ import type { TeamYear, TeamMember } from "../types";
 const TeamMemberCard: React.FC<{ member: TeamMember }> = ({ member }) => (
   <div className="flex items-center p-4 border border-gray-200/80  h-full grid grid-cols-7">
     <img
-      className="h-full w-max  object-cover flex-shrink-0 col-span-3"
+      className="aspect-[3/4] w-full  object-cover flex-shrink-0 col-span-3"
       src={member.img}
       alt={member.name}
     />

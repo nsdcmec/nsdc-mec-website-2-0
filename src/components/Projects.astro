@@ -18,15 +18,15 @@ const displayProjects = isPreview ? projects.slice(0, 3) : projects;
     </div>
     {
       displayProjects.length > 0 ? (
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 w-full">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 w-full ">
           {displayProjects.map((project) => (
-            <div class="w-full">
+            <div class="w-full border border-black/4 p-2">
               <a href={project.link || "#"} target="_blank" rel="noopener noreferrer">
                 <div class="w-full mb-4 overflow-hidden">
                   <img
                     src={project.img}
                     alt={project.title}
-                    class="w-full h-auto object-cover aspect-square"
+                    class="w-full   "
                   />
                 </div>
                 <h3 class="text-xl font-bold text-gray-900">{project.title}</h3>

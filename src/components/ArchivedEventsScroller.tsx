@@ -200,7 +200,7 @@ const ArchivedEventsScroller = ({
               <img
                 src={event.img}
                 alt={event.title}
-                className="w-full h-auto aspect-square object-cover grayscale"
+                className="w-full h-auto aspect-square object-cover "
               />
             </div>
             <div className="flex flex-col justify-between h-full md:col-span-3">
