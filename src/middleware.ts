@@ -16,27 +16,28 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const cacheKey = pathname;
   const cachedHtml = store.getCachedHtml(cacheKey);
 
-  // if (cachedHtml) {
-  //   const eTag = `"${cacheKey}-${store.lastFetched}"`;
-  //
-  //   if (request.headers.get("if-none-match") === eTag) {
-  //     console.log("client cache hit");
-  //     return new Response(null, { status: 304 });
-  //   }
-  //   console.log("server cache hit");
-  //
-  //   return new Response(cachedHtml, {
-  //     status: 200,
-  //     headers: {
-  //       "Content-Type": "text/html",
-  //       "Cache-Control": "public, max-age=120, stale-while-revalidate=3600",
-  //       ETag: eTag,
-  //       "X-Cache": "HIT",
-  //     },
-  //   });
-  // }
+  if (cachedHtml) {
+    const eTag = `"${cacheKey}-${store.lastFetched}"`;
+
+    if (request.headers.get("if-none-match") === eTag) {
+      console.log("client cache hit");
+      return new Response(null, { status: 304 });
+    }
+    console.log("server cache hit");
+
+    return new Response(cachedHtml, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/html",
+        "Cache-Control": "public, max-age=30, stale-while-revalidate=3600",
+        ETag: eTag,
+        "X-Cache": "HIT",
+      },
+    });
+  }
 
   const response = await next();
+  console.log("cache miss");
 
   if (
     response.status === 200 &&

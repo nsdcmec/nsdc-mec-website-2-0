@@ -8,7 +8,9 @@ const serviceAccountStr = process.env.FIREBASE_SERVICE_ACCOUNT;
 
 try {
   if (serviceAccountStr) {
-    const serviceAccount = JSON.parse(serviceAccountStr);
+    const serviceAccount = JSON.parse(
+      Buffer.from(serviceAccountStr, "base64").toString("utf-8"),
+    );
 
     if (!getApps().length) {
       app = initializeApp({

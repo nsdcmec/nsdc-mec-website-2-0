@@ -1,7 +1,7 @@
 ---
 // src/pages/[...slug].astro
-import Layout from "../layouts/Layout.astro";
-import { store } from "../lib/store";
+import Layout from "../layouts/IframeLayout.astro";
+import { dataService } from "../lib/data-service";
 
 const { slug } = Astro.params;
 const safeSlug = slug || "";
@@ -12,7 +12,7 @@ if (!isValidSlug) {
   return new Response(null, { status: 404, statusText: "Not Found" });
 }
 
-const route = await store.getRoute(safeSlug);
+const route = await dataService.getRoute(safeSlug);
 
 if (!route) {
   return new Response(null, { status: 404, statusText: "Not Found" });
@@ -21,17 +21,12 @@ if (!route) {
 if (route.type === "redirect") {
   return Astro.redirect(route.destination, 307);
 }
-
-const siteData = await store.getSiteData();
 ---
 
-<Layout title={route.title || "External Resource"} links={siteData.links}>
-  <div class="w-full h-full">
-    <iframe
-      src={route.destination}
-      class="w-full h-full border-0"
-      allowfullscreen
-    >
-    </iframe>
-  </div>
+<Layout title={route.title || "External Resource"}>
+  <iframe
+    src={route.destination}
+    class="w-[100dvw] h-[100dvh] border-none overflow-hidden m-0 p-0"
+  >
+  </iframe>
 </Layout>

@@ -10,6 +10,9 @@ export default defineConfig({
   adapter: node({
     mode: "standalone",
   }),
+  security: {
+    checkOrigin: false,
+  },
 
   vite: {
     plugins: [tailwindcss()],
@@ -17,3 +20,4 @@ export default defineConfig({
 
   integrations: [solidJs()],
 });
+

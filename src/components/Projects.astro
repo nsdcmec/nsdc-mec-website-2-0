@@ -74,10 +74,11 @@ const { projects } = Astro.props;
                     <div class="md:col-span-5 order-1 md:order-2">
                       <div class="overflow-hidden  bg-bg-2 aspect-[4/3] md:aspect-[3/2] border border-bg-2">
                         <img
+                          width={300}
+                          height={300}
                           src={project.img}
                           alt={project.title}
                           class="w-full h-full object-cover transition-transform duration-500 "
-                          loading="lazy"
                         />
                       </div>
                     </div>

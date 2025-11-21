@@ -133,4 +133,5 @@ store.registerFetcher(useMock ? loadMockData : loadFirestoreData);
 
 export const dataService = {
   getInitialData: async () => store.getSiteData(),
+  getRoute: async (slug: string) => store.getRoute(slug),
 };

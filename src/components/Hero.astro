@@ -48,6 +48,9 @@ const buttonText = content.buttonText || "Learn More";
         content.type === "image" && (
           <img
             src={content.src}
+            loading="eager"
+            width="1024"
+            height="1024"
             alt="Hero visual"
             class="w-full h-full object-cover"
           />

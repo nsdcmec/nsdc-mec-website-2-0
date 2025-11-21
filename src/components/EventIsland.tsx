@@ -269,7 +269,7 @@ export default function EventsIsland(props: Props) {
   return (
     <section
       id="events"
-      class="bg-bg-0 transition-colors duration-300 relative scroll-mt-20"
+      class="bg-bg-0 transition-colors mt-16 duration-300 relative scroll-mt-20"
     >
       <div class="w-full md:px-4">
         <div
@@ -413,7 +413,7 @@ export default function EventsIsland(props: Props) {
           </div>
 
           {/* --- CONTENT AREA --- */}
-          <div class="md:col-span-5 md:mt-0 py-16 md:py-0">
+          <div class="md:col-span-5 md:mt-16 py-16 md:py-0 ">
             <div class="flex flex-col border-l border-r border-fg-0/20 gap-12">
               {/* 1. VERTICAL LIST */}
               <For each={[...upcomingGroup(), ...recentGroup()]}>
@@ -539,7 +539,7 @@ export default function EventsIsland(props: Props) {
 
                   <div
                     ref={archiveContainerRef}
-                    class="flex flex-row overflow-x-auto snap-x snap-mandatory sm:gap-6 gap-[4vw] scrollbar-hide border-fg-0/20 border-t border-b"
+                    class="flex  flex-row overflow-x-auto snap-x snap-mandatory sm:gap-6 gap-[4vw] scrollbar-hide border-fg-0/20 border-t border-b"
                   >
                     <For each={archivedEvents()}>
                       {(event) => (
@@ -584,14 +584,14 @@ export default function EventsIsland(props: Props) {
                                 <Show when={event.link}>
                                   <a
                                     href={event.link}
-                                    class="inline-block py-1 px-2 text-sm font-bold bg-fg-0 text-bg-0/80 hover:bg-fg-0/80 hover:text-bg-0 transition-colors"
+                                    class="inline-block py-1 px-2 mr-2 text-sm font-bold bg-fg-0 text-bg-0/80 hover:bg-fg-0/80 hover:text-bg-0 transition-colors"
                                   >
                                     {event.buttonText || "Visit"}
                                   </a>
                                 </Show>
                                 <a
                                   href={`/report/${event.relation}`}
-                                  class="inline-block py-1.5 px-3 text-sm font-bold bg-bg-2 text-fg-0/80 hover:bg-bg-2/80 hover:text-fg-0 transition-colors"
+                                  class="inline-block py-1 px-2 text-sm font-bold bg-bg-2 text-fg-0/80 hover:bg-bg-2/80 hover:text-fg-0 transition-colors"
                                 >
                                   View Report
                                 </a>

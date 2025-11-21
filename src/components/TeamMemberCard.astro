@@ -15,10 +15,12 @@ const transitionName = `member-${member.name.replace(/\s+/g, "-").toLowerCase()}
   transition:name={transitionName}
 >
   <img
+    width={100}
+    height={100}
+    loading="eager"
     class="aspect-[3/4] h-full object-cover flex-shrink-0 col-span-3"
     src={member.img}
     alt={member.name}
-    loading="lazy"
   />
   <div
     class="flex flex-col justify-between h-full ml-2 flex-grow col-span-4 p-2"
