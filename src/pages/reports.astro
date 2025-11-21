@@ -1,18 +1,15 @@
 ---
-// src/pages/reports.astro
 import Layout from "../layouts/Layout.astro";
 import { dataService } from "../lib/data-service";
-import Reports from "../components/Reports.astro";
+import ReportComponent from "../components/Reports.astro";
 import type { Report } from "../types";
 
-// Fetch all data at build time
 const data = await dataService.getInitialData();
 
 if (!data) {
   throw new Error("Failed to load data for the reports page.");
 }
 
-// Replicate the filtering and mapping logic in the Astro frontmatter
 const reports: Report[] = data.events
   .filter((e) => e.isArchived)
   .map((e) => ({
@@ -26,10 +23,5 @@ const reports: Report[] = data.events
 ---
 
 <Layout title="Reports | NSDC MEC" links={data.links}>
-  <div class="bg-white">
-    <div class="container mx-auto px-4 py-8">
-      <!-- The Reports component displays the filtered list of archived events -->
-      <Reports reports={reports} />
-    </div>
-  </div>
+  <ReportComponent reports={reports} />
 </Layout>

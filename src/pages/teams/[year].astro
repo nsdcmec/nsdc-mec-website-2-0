@@ -1,0 +1,72 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import TeamMemberCard from "../../components/TeamMemberCard.astro";
+import { dataService } from "../../lib/data-service";
+
+const data = await dataService.getInitialData();
+const { year } = Astro.params;
+
+const currentTeam = data.teams.find((t) => t.id === year);
+if (!currentTeam) {
+  const latest = data.teams[0]?.id;
+  if (latest) return Astro.redirect(`/teams/${latest}`);
+  return Astro.redirect("/404");
+}
+
+const allYears = data.teams.map((t) => ({ id: t.id, title: t.title }));
+---
+
+<Layout title={`${currentTeam.title} | NSDC MEC`} links={data.links}>
+  <div class="bg-white text-black min-h-screen">
+    <section class="py-16 lg:py-20 bg-white">
+      <div class="px-4 mb-8">
+        <div class="flex justify-between items-center mb-10">
+          <h2
+            class="text-3xl md:text-4xl font-bold font-sans text-fg-0"
+            transition:name="team-page-title"
+          >
+            Our Team
+          </h2>
+
+          <div class="relative" transition:name="team-year-selector">
+            <select
+              onchange="window.location.href='/teams/' + this.value"
+              class="appearance-none bg-white pl-4 pr-10 py-2 border border-gray-300 text-sm font-semibold focus:ring-2 focus:ring-gray-800 focus:outline-none cursor-pointer hover:border-gray-400 transition-colors"
+              aria-label="Select Team Year"
+            >
+              {
+                allYears.map((y) => (
+                  <option value={y.id} selected={y.id === year}>
+                    {y.title}
+                  </option>
+                ))
+              }
+            </select>
+            <div
+              class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"
+            >
+              <svg
+                class="fill-current h-4 w-4"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                ><path
+                  d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+                ></path></svg
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5">
+          {
+            currentTeam.members.map((member) => (
+              <>
+                <TeamMemberCard member={member} />
+              </>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+  </div>
+</Layout>

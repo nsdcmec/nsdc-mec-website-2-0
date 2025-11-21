@@ -1,22 +1,18 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { dataService } from "../../lib/data-service";
-
 const { id } = Astro.params;
 const data = await dataService.getInitialData();
 const report = data.events.find((e) => e.id === id || e.relation === id);
-
 if (!report) {
   return Astro.redirect("/404");
 }
-
 const formattedDate = new Date(report.date).toLocaleDateString("en-US", {
   year: "numeric",
   month: "long",
   day: "numeric",
 });
 ---
-
 <Layout title={report.title} links={data.links}>
   <article
     class="bg-bg-0 min-h-[80vh] flex flex-col items-center py-12 md:py-20 transition-colors duration-300"
@@ -41,7 +37,6 @@ const formattedDate = new Date(report.date).toLocaleDateString("en-US", {
           Back to Reports
         </a>
       </div>
-
       <header class="border-b border-bg-2 pb-8 mb-8">
         <div class="flex flex-wrap gap-3 mb-4">
           {
@@ -61,7 +56,6 @@ const formattedDate = new Date(report.date).toLocaleDateString("en-US", {
           Published on {formattedDate}
         </p>
       </header>
-
       <figure
         class="mb-10 bg-bg-2 rounded-sm overflow-hidden shadow-sm border border-bg-2"
       >
@@ -71,14 +65,13 @@ const formattedDate = new Date(report.date).toLocaleDateString("en-US", {
           class="w-full h-auto max-h-[500px] object-cover"
         />
       </figure>
-
       
       <div
         class="prose-content text-fg-0/90 font-sans text-lg leading-relaxed space-y-6"
       >
         {
           report.desc.split("\n").map((paragraph) => {
-            if (!paragraph.trim()) return null;
+        if (!paragraph.trim()) return null;
             return <p>{paragraph}</p>;
           })
         }

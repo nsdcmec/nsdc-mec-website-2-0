@@ -1,0 +1,13 @@
+---
+import { dataService } from "../../lib/data-service";
+
+// Fetch data
+const data = await dataService.getInitialData();
+const latestYear = data.teams[0]?.id;
+
+if (latestYear) {
+  return Astro.redirect(`/teams/${latestYear}`);
+} else {
+  return new Response("No teams found", { status: 404 });
+}
+---

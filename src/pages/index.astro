@@ -2,11 +2,9 @@
 import Layout from "../layouts/Layout.astro";
 import { dataService } from "../lib/data-service";
 
-import Hero from "../components/Hero";
+import Hero from "../components/Hero.astro";
 import About from "../components/About.astro";
-import Events from "../components/Events";
-import Projects from "../components/Projects.astro";
-import Resources from "../components/Resources.astro";
+import EventIsland from "../components/EventIsland";
 import TeamPreview from "../components/TeamPreview.astro";
 
 const data = await dataService.getInitialData();
@@ -16,14 +14,9 @@ if (!data) {
 ---
 
 <Layout title="NSDC MEC" links={data.links}>
-  <Hero
-    content={data.heroContent}
-    announcements={data.announcements}
-    client:load
-  />
+  <Hero content={data.heroContent} announcements={data.announcements} />
   <About content={data.about} />
-  <Events events={data.events} isPreview={true} client:load />
-  <Projects projects={data.projects} isPreview={true} />
-  <Resources resources={data.resources} isPreview={true} />
-  <TeamPreview imageUrl={data.teamsPreview.src} isPreview={true} />
+
+  <EventIsland events={data.events} client:load />
+  <TeamPreview imageUrl={data.teamsPreview.src} />
 </Layout>
