@@ -1,5 +1,4 @@
 ---
-// src/components/Reports.astro
 import type { Report } from "../types";
 
 interface Props {
@@ -9,39 +8,90 @@ interface Props {
 const { reports } = Astro.props;
 ---
 
-<section class="py-16 lg:py-24 bg-white">
-  <div class="px-4">
-    <h2 class="text-lg font-semibold text-gray-800 mb-10">Reports</h2>
-    {
-      reports.length > 0 ? (
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {reports.map((report) => (
-            <div class="flex flex-col h-full bg-gray-50 overflow-hidden border border-gray-200/80">
-              <div class="relative w-full aspect-square">
-                <img
-                  src={report.img}
-                  alt={report.title}
-                  class="w-full  object-contain  "
-                />
-              </div>
-              <div class="flex flex-col flex-grow p-6 z-10 -mt-24">
-                <h3 class="text-xl font-semibold text-gray-900">{report.title}</h3>
-                <p class="mt-2 text-sm text-gray-600 flex-grow">{report.desc}</p>
-                <div class="mt-6">
-<a 
-                    href={"/report/" + report.id}
-                    class="inline-block py-2 px-5 text-sm font-medium bg-gray-900 text-white hover:bg-black transition-colors"
-                  >
-                    View Report
-                  </a>
-                </div>
-              </div>
-            </div>
-          ))}
+<section
+  class="py-16 lg:py-24 bg-bg-0 transition-colors duration-300 border-t border-bg-2"
+>
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+      <div class="lg:col-span-3">
+        <div class="lg:sticky lg:top-24">
+          <h2
+            class="text-4xl font-bold font-serif text-fg-0 tracking-tight mb-4"
+          >
+            Reports
+          </h2>
+          <p class="text-fg-1 font-sans text-sm leading-relaxed">
+            Detailed documentation, event summaries, and annual chapter reports.
+          </p>
         </div>
-      ) : (
-        <p class="text-center text-gray-500">No reports to display.</p>
-      )
-    }
+      </div>
+
+      <div class="lg:col-span-9">
+        {
+          reports.length > 0 ? (
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {reports.map((report) => (
+                <article class="group flex flex-col h-full bg-bg-1 border border-bg-2 rounded-sm overflow-hidden hover:shadow-md hover:border-fg-0/20 transition-all duration-300">
+                  <div class="relative w-full aspect-[4/3] overflow-hidden bg-bg-2 border-b border-bg-2">
+                    <img
+                      src={report.img}
+                      alt={report.title}
+                      class="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+
+                  <div class="flex flex-col flex-grow p-6">
+                    <div class="mb-3">
+                      <span class="text-xs font-mono font-bold text-fg-1 uppercase tracking-wider">
+                        {report.date
+                          ? new Date(report.date).getFullYear()
+                          : "Report"}
+                      </span>
+                    </div>
+
+                    <h3 class="text-xl font-bold font-serif text-fg-0 leading-tight mb-3 group-hover:text-primary transition-colors">
+                      {report.title}
+                    </h3>
+
+                    <p class="text-sm text-fg-1 font-sans leading-relaxed flex-grow line-clamp-3">
+                      {report.desc}
+                    </p>
+
+                    <div class="mt-6 pt-4 border-t border-bg-2 flex items-center justify-between">
+                      <a
+                        href={"/report/" + report.id}
+                        class="text-sm font-bold text-fg-0 group-hover:text-primary transition-colors inline-flex items-center gap-2"
+                      >
+                        Read Report
+                        <svg
+                          class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M17 8l4 4m0 0l-4 4m4-4H3"
+                          />
+                        </svg>
+                      </a>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div class="py-12 text-center border border-dashed border-bg-2 rounded-lg">
+              <p class="text-fg-1 font-sans">
+                No reports available at the moment.
+              </p>
+            </div>
+          )
+        }
+      </div>
+    </div>
   </div>
 </section>

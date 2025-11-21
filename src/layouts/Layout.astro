@@ -1,8 +1,8 @@
 ---
 import { ClientRouter } from "astro:transitions";
 import "../styles/global.css";
-import Header from "../components/Header.tsx";
-import Footer from "../components/Footer.astro"; 
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
 import type { LinkColumn } from "../types";
 
 interface Props {
@@ -19,20 +19,44 @@ const { title, links } = Astro.props;
     <meta charset="UTF-8" />
     <meta name="description" content="NSDC MEC Website" />
     <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{title}</title>
+
     <ClientRouter />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap"
-      rel="stylesheet"
-    />
+    <script is:inline>
+      const getTheme = () => {
+        if (
+          typeof localStorage !== "undefined" &&
+          localStorage.getItem("theme")
+        ) {
+          return localStorage.getItem("theme");
+        }
+        return "system";
+      };
+
+      const applyTheme = (theme) => {
+        const root = document.documentElement;
+        root.classList.remove("light", "dark");
+        if (theme === "dark") root.classList.add("dark");
+        if (theme === "light") root.classList.add("light");
+      };
+
+      applyTheme(getTheme());
+
+      document.addEventListener("astro:after-swap", () =>
+        applyTheme(getTheme()),
+      );
+    </script>
   </head>
-  <body class="antialiased">
-    <Header client:load />
-    <main>
+  <body class="antialiased min-h-screen">
+    <div transition:persist="header">
+      <Header />
+    </div>
+
+    <main class="flex-grow w-full mt-10">
       <slot />
     </main>
+
     <Footer links={links} />
   </body>
 </html>

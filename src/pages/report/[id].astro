@@ -1,27 +1,14 @@
 ---
-// src/pages/report/[id].astro
 import Layout from "../../layouts/Layout.astro";
 import { dataService } from "../../lib/data-service";
-import type { Event } from "../../types";
 
-export async function getStaticPaths() {
-  const data = await dataService.getInitialData();
-  const reports = data.events; // Or filter for specific reports if needed
+const { id } = Astro.params;
+const data = await dataService.getInitialData();
+const report = data.events.find((e) => e.id === id || e.relation === id);
 
-  return reports.map((report) => {
-    return {
-      params: { id: report.id },
-      props: { report, links: data.links },
-    };
-  });
+if (!report) {
+  return Astro.redirect("/404");
 }
-
-interface Props {
-  report: Event;
-  links: any;
-}
-
-const { report, links } = Astro.props;
 
 const formattedDate = new Date(report.date).toLocaleDateString("en-US", {
   year: "numeric",
@@ -30,29 +17,72 @@ const formattedDate = new Date(report.date).toLocaleDateString("en-US", {
 });
 ---
 
-<Layout title={report.title} links={links}>
-  <article class="max-w-4xl mx-auto container px-4 py-12 md:py-20 bg-[#FAF9F6]">
-    <div class="border-b border-gray-200 pb-8 mb-8">
-      <h1
-        class="text-4xl md:text-6xl font-serif font-bold text-gray-900 leading-tight"
+<Layout title={report.title} links={data.links}>
+  <article
+    class="bg-bg-0 min-h-[80vh] flex flex-col items-center py-12 md:py-20 transition-colors duration-300"
+  >
+    <div class="container max-w-3xl px-4 sm:px-6">
+      <div class="mb-8">
+        <a
+          href="/reports"
+          class="inline-flex items-center gap-2 text-sm font-bold text-fg-1 hover:text-primary transition-colors"
+        >
+          <svg
+            class="w-4 h-4 rotate-180"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            ><path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg
+          >
+          Back to Reports
+        </a>
+      </div>
+
+      <header class="border-b border-bg-2 pb-8 mb-8">
+        <div class="flex flex-wrap gap-3 mb-4">
+          {
+            report.tags?.map((tag) => (
+              <span class="text-xs font-mono font-semibold bg-bg-2 text-fg-1 px-2 py-1 rounded-sm uppercase tracking-wider">
+                {tag}
+              </span>
+            ))
+          }
+        </div>
+        <h1
+          class="text-3xl md:text-5xl font-serif font-bold text-fg-0 leading-tight mb-4"
+        >
+          {report.title}
+        </h1>
+        <p class="text-sm font-mono text-fg-1 uppercase tracking-widest">
+          Published on {formattedDate}
+        </p>
+      </header>
+
+      <figure
+        class="mb-10 bg-bg-2 rounded-sm overflow-hidden shadow-sm border border-bg-2"
       >
-        {report.title}
-      </h1>
-      <p class="mt-4 text-lg text-gray-500">
-        Published on {formattedDate}
-      </p>
-    </div>
+        <img
+          src={report.img}
+          alt={report.title}
+          class="w-full h-auto max-h-[500px] object-cover"
+        />
+      </figure>
 
-    <figure class="my-8">
-      <img
-        src={report.img}
-        alt={report.title}
-        class="w-full h-auto object-cover rounded-lg shadow-md"
-      />
-    </figure>
-
-    <div class="prose prose-lg max-w-none text-gray-800 leading-relaxed">
-      {report.desc.split("\n").map((paragraph) => <p>{paragraph}</p>)}
+      
+      <div
+        class="prose-content text-fg-0/90 font-sans text-lg leading-relaxed space-y-6"
+      >
+        {
+          report.desc.split("\n").map((paragraph) => {
+            if (!paragraph.trim()) return null;
+            return <p>{paragraph}</p>;
+          })
+        }
+      </div>
     </div>
   </article>
 </Layout>
