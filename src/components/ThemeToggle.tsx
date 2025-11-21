@@ -1,17 +1,19 @@
-import React, { useState, useEffect } from "react";
+import { createSignal, onMount } from "solid-js";
+
+type Theme = "light" | "dark" | "system";
 
 const SunIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    className="h-5 w-5"
+    class="h-5 w-5"
     fill="none"
     viewBox="0 0 24 24"
     stroke="currentColor"
-    strokeWidth={2}
+    stroke-width="2"
   >
     <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      stroke-linecap="round"
+      stroke-linejoin="round"
       d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707"
     />
   </svg>
@@ -19,15 +21,15 @@ const SunIcon = () => (
 const MoonIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    className="h-5 w-5"
+    class="h-5 w-5"
     fill="none"
     viewBox="0 0 24 24"
     stroke="currentColor"
-    strokeWidth={2}
+    stroke-width="2"
   >
     <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      stroke-linecap="round"
+      stroke-linejoin="round"
       d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
     />
   </svg>
@@ -35,71 +37,74 @@ const MoonIcon = () => (
 const SystemIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    className="h-5 w-5"
+    class="h-5 w-5"
     fill="none"
     viewBox="0 0 24 24"
     stroke="currentColor"
-    strokeWidth={2}
+    stroke-width="2"
   >
     <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      stroke-linecap="round"
+      stroke-linejoin="round"
       d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
     />
   </svg>
 );
 
-const ThemeToggle: React.FC = () => {
-  const [theme, setTheme] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("theme") || "system";
-    }
-    return "system";
+export default function ThemeToggle() {
+  const [theme, setTheme] = createSignal<Theme>("system");
+
+  onMount(() => {
+    const stored = localStorage.getItem("theme") as Theme | null;
+    if (stored) setTheme(stored);
   });
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
+  const updateTheme = (newTheme: Theme) => {
+    setTheme(newTheme);
+    const root = document.documentElement;
 
-    const root = window.document.documentElement;
+    root.classList.remove("light", "dark");
 
-    const isDarkActive =
-      theme === "dark" ||
-      (theme === "system" &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches);
-
-    if (isDarkActive) {
-      root.classList.add("dark");
+    if (newTheme === "system") {
+      localStorage.removeItem("theme");
     } else {
-      root.classList.remove("dark");
+      root.classList.add(newTheme);
+      localStorage.setItem("theme", newTheme);
     }
+  };
 
-    localStorage.setItem("theme", theme);
-  }, [theme]);
-
-  const options = [
-    { name: "light", icon: <SunIcon /> },
-    { name: "dark", icon: <MoonIcon /> },
-    { name: "system", icon: <SystemIcon /> },
-  ] as const;
+  const btnClass = (btnType: Theme) =>
+    `p-1.5 rounded-full transition-colors ${
+      theme() === btnType
+        ? "bg-bg-1 text-fg-0 shadow-sm"
+        : "text-fg-1 hover:text-fg-0"
+    }`;
 
   return (
-    <div className="flex items-center space-x-2 rounded-full bg-gray-200 dark:bg-gray-700 p-1">
-      {options.map((option) => (
-        <button
-          key={option.name}
-          onClick={() => setTheme(option.name)}
-          className={`p-1.5 rounded-full transition-colors ${
-            theme === option.name
-              ? "bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200"
-              : "text-gray-500 hover:text-gray-800 dark:hover:text-gray-200"
-          }`}
-          aria-label={`Switch to ${option.name} theme`}
-        >
-          {option.icon}
-        </button>
-      ))}
+    <div class="flex items-center space-x-2 rounded-full bg-bg-2 p-1">
+      <button
+        onClick={() => updateTheme("light")}
+        class={btnClass("light")}
+        aria-label="Switch to light theme"
+      >
+        <SunIcon />
+      </button>
+
+      <button
+        onClick={() => updateTheme("dark")}
+        class={btnClass("dark")}
+        aria-label="Switch to dark theme"
+      >
+        <MoonIcon />
+      </button>
+
+      <button
+        onClick={() => updateTheme("system")}
+        class={btnClass("system")}
+        aria-label="Switch to system theme"
+      >
+        <SystemIcon />
+      </button>
     </div>
   );
-};
-
-export default ThemeToggle;
+}

@@ -1,19 +1,18 @@
 ---
 interface Props {
   imageUrl: string;
-  isPreview?: boolean;
 }
 
-const { imageUrl, isPreview } = Astro.props;
+const { imageUrl } = Astro.props;
 ---
 
-<section class="py-16 lg:py-24 bg-[#FAF9F6]">
+<section class="py-16 lg:py-24 bg-bg-0">
   <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
     {
-      isPreview && (
+      (
         <div class="mb-8">
-          <p class="text-md font-semibold text-gray-800">NSDC Core</p>
-          <h2 class="mt-2 text-4xl lg:text-5xl font-serif font-medium text-gray-900">
+          <p class="text-md font-semibold text-fg-0">NSDC Core</p>
+          <h2 class="mt-2 text-4xl lg:text-5xl font-serif font-medium text-fg-0">
             OUR TEAM
           </h2>
         </div>
@@ -27,11 +26,11 @@ const { imageUrl, isPreview } = Astro.props;
       />
     </div>
     {
-      isPreview && (
+      (
         <div class="mt-10 text-center">
           <a
             href={"/teams"}
-            class="inline-block py-3 px-8 text-sm font-bold bg-gray-900 text-white rounded-md hover:bg-black transition-colors"
+            class="inline-block py-3 px-8 text-sm font-bold bg-fg-0 text-bg-0 rounded-md hover:bg-fg-1 transition-colors"
           >
             View Our Team
           </a>
@@ -40,4 +39,3 @@ const { imageUrl, isPreview } = Astro.props;
     }
   </div>
 </section>
-
