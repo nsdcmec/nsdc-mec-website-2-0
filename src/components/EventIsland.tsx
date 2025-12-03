@@ -101,8 +101,10 @@ export default function EventsIsland(props: Props) {
       const isArchive = currentIdx >= archivedStart;
       const wasArchive =
         prevIndex !== undefined ? prevIndex >= archivedStart : false;
+      console.log(isArchive, wasArchive);
 
       const shouldScrollVertical = !(isArchive && wasArchive);
+      console.log({shouldScrollVertical})
 
       if (shouldScrollVertical) {
         if (isDesktop) {
@@ -259,10 +261,10 @@ export default function EventsIsland(props: Props) {
       id="events"
       class="bg-bg-0 transition-colors mt-26 duration-300 relative scroll-mt-20"
     >
-      <div class="w-full md:px-4">
+      <div class="w-full md:px-4 ">
         <div
           id="mobile-header-wrapper"
-          class="md:hidden sticky  z-30 bg-bg-0/85 backdrop-blur-md border-b border-bg-2"
+          class="md:hidden sticky top-10  z-30 bg-bg-0/85 backdrop-blur-md border-b border-bg-2"
         >
           <div class="flex flex-col border-b border-fg-0/20">
             <h1 class="font-bold font-sans tracking-wide text-fg-0 text-2xl py-2 bg-bg-0/75 backdrop-blur-sm w-full border-b md:border-none border-bg-2/50 px-4">
@@ -276,7 +278,6 @@ export default function EventsIsland(props: Props) {
                 <For each={processedData().sidebarList}>
                   {(item, index) => (
                     <a
-                      href={`#event-${item.id}`}
                       data-target={item.id}
                       onClick={(e) => handleNavClick(e, index())}
                       classList={{
@@ -349,7 +350,6 @@ export default function EventsIsland(props: Props) {
                                 return (
                                   <li>
                                     <a
-                                      href={`#event-${item.id}`}
                                       data-target={item.id}
                                       onClick={(e) =>
                                         handleNavClick(e, globalIndex)
