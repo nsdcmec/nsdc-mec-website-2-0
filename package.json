@@ -14,14 +14,14 @@
     "@astrojs/solid-js": "^5.1.3",
     "@fontsource/crimson-pro": "^5.2.8",
     "@fontsource/quicksand": "^5.2.10",
-    "@tailwindcss/vite": "^4.1.13",
     "astro": "^5.14.1",
     "firebase-admin": "^13.6.0",
-    "prettier-plugin-astro": "^0.14.1",
-    "solid-js": "^1.9.10",
-    "tailwindcss": "^4.1.13"
+    "solid-js": "^1.9.10"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.1.13",
+    "prettier-plugin-astro": "^0.14.1",
+    "tailwindcss": "^4.1.13",
     "typescript": "^5.9.2"
   }
 }

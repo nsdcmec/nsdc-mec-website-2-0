@@ -1,0 +1,25 @@
+services:
+  nsdc-site:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    image: nsdc-site:latest
+    container_name: nsdc-site
+    restart: unless-stopped
+    
+    expose:
+      - "4321"
+
+    env_file:
+      - .env
+
+    environment:
+      - VIRTUAL_HOST=nsdc.mec.ac.in
+      - VIRTUAL_PORT=4321
+      
+    networks:
+      - mec
+
+networks:
+  mec:
+    external: true

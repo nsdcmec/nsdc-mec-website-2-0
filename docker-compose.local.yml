@@ -1,0 +1,12 @@
+services:
+  nsdc-site:
+    build: .
+    
+    ports:
+      - "4321:4321"
+    
+    env_file:
+      - .env
+
+    networks:
+      - default
