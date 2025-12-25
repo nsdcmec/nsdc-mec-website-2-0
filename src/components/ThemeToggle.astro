@@ -3,11 +3,11 @@
 ---
 
 <theme-toggle>
-  <div class="flex items-center space-x-2 rounded-full bg-bg-2 p-1">
+  <div class="flex items-center">
     <button
       id="theme-btn-light"
       aria-label="Light Mode"
-      class="theme-btn p-1.5 rounded-full text-fg-1 hover:text-fg-0 transition-colors"
+      class="theme-btn p-1.5 text-fg-1 hover:text-fg-0 transition-colors"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -26,7 +26,7 @@
     <button
       id="theme-btn-dark"
       aria-label="Dark Mode"
-      class="theme-btn p-1.5 rounded-full text-fg-1 hover:text-fg-0 transition-colors"
+      class="theme-btn p-1.5 text-fg-1 hover:text-fg-0 transition-colors"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -45,7 +45,7 @@
     <button
       id="theme-btn-system"
       aria-label="System Mode"
-      class="theme-btn p-1.5 rounded-full text-fg-1 hover:text-fg-0 transition-colors"
+      class="theme-btn p-1.5 text-fg-1 hover:text-fg-0 transition-colors"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -111,17 +111,17 @@
     }
 
     updateActiveButton(theme) {
-      const activeClass = "bg-bg-1 text-fg-0 shadow-sm";
-      const inactiveClass = "text-fg-1 hover:text-fg-0";
+      const activeClass = "bg-primary text-primary-fg rounded-sm ";
+      const inactiveClass = "text-fg-1 hover:text-fg-0 bg-bg-2";
 
       ["light", "dark", "system"].forEach((t) => {
         const btn = this.querySelector(`#theme-btn-${t}`);
         if (!btn) return;
 
         if (t === theme) {
-          btn.className = `theme-btn p-1.5 rounded-full transition-colors ${activeClass}`;
+          btn.className = `theme-btn p-1.5  transition-colors ${activeClass}`;
         } else {
-          btn.className = `theme-btn p-1.5 rounded-full transition-colors ${inactiveClass}`;
+          btn.className = `theme-btn p-1.5  transition-colors ${inactiveClass}`;
         }
       });
     }
