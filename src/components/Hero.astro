@@ -1,6 +1,7 @@
 ---
 import type { HeroContent, Announcement } from "../types";
 import Announcements from "./AnnouncementIsland";
+import HeroAnimation from "./HeroAnimation";
 
 interface Props {
   content: HeroContent;
@@ -9,6 +10,7 @@ interface Props {
 
 const { content, announcements } = Astro.props;
 
+const contentType = content?.type || "animation";
 const targetLink = content.type === "url" ? content.src : content.href;
 const overlayText = content.desc;
 const buttonText = content.buttonText || "Learn More";
@@ -31,7 +33,9 @@ const buttonText = content.buttonText || "Learn More";
         >
           National Students Data Corps
         </h1>
-        <p class="text-xl md:text-2xl text-fg-1 mt-1 font-serif">MEC Chapter</p>
+        <h2 class="text-xl md:text-2xl text-fg-1 mt-1 font-serif">
+          MEC Chapter
+        </h2>
       </div>
       <p
         class="text-lg text-fg-1 mt-8 md:mt-4 md:mb-0 font-sans leading-relaxed"
@@ -42,10 +46,13 @@ const buttonText = content.buttonText || "Learn More";
     </div>
 
     <div
-      class="md:col-span-2 md:row-span-1 row-span-4 w-full h-[400px] md:h-auto relative group bg-bg-2 overflow-hidden"
+      class:list={[
+        "md:col-span-2 md:row-span-1 bg-bg-0 row-span-4 w-full h-[400px] md:h-auto relative group overflow-hidden",
+        ,
+      ]}
     >
       {
-        content.type === "image" && (
+        contentType === "image" && content.src && (
           <img
             src={content.src}
             loading="eager"
@@ -57,7 +64,7 @@ const buttonText = content.buttonText || "Learn More";
         )
       }
       {
-        content.type === "video" && (
+        contentType === "video" && content.src && (
           <video
             src={content.src}
             class="w-full h-full object-cover"
@@ -69,7 +76,7 @@ const buttonText = content.buttonText || "Learn More";
         )
       }
       {
-        content.type === "url" && (
+        contentType === "url" && content.src && (
           <iframe
             src={content.src}
             title="Hero External Content"
@@ -77,6 +84,7 @@ const buttonText = content.buttonText || "Learn More";
           />
         )
       }
+      {contentType === "animation" && <HeroAnimation client:load />}
 
       {
         (overlayText || targetLink) && (

@@ -5,8 +5,8 @@ export interface Announcement {
 }
 
 export interface HeroContent {
-  type: "image" | "video" | "url";
-  src: string;
+  type: "image" | "video" | "url" | "animation";
+  src?: string;
   href?: string;
   desc?: string;
   buttonText?: string;

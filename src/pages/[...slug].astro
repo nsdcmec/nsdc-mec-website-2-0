@@ -13,6 +13,7 @@ if (!isValidSlug) {
 }
 
 const route = await dataService.getRoute(safeSlug);
+console.log(route, "route");
 
 if (!route) {
   return new Response(null, { status: 404, statusText: "Not Found" });

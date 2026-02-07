@@ -1,0 +1,13 @@
+[
+  {
+    "slug": "nsdc",
+    "destination": "https://nsdc.mec.ac.in",
+    "type": "redirect"
+  },
+  {
+    "slug": "mec",
+    "destination": "https://mec.ac.in",
+    "type": "iframe",
+    "title": "MEC"
+  }
+]

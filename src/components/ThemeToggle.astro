@@ -93,7 +93,7 @@
       this.updateActiveButton(currentTheme);
     }
 
-    setTheme(theme) {
+    setTheme(theme: string) {
       const root = document.documentElement;
 
       root.classList.remove("light", "dark");
@@ -110,7 +110,7 @@
       this.updateActiveButton(theme);
     }
 
-    updateActiveButton(theme) {
+    updateActiveButton(theme: string) {
       const activeClass = "bg-primary text-primary-fg rounded-sm ";
       const inactiveClass = "text-fg-1 hover:text-fg-0 bg-bg-2";
 

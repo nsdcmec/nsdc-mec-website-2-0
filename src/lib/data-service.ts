@@ -34,6 +34,7 @@ const loadMockData = async () => {
     events,
     projects,
     teams,
+    routes,
   ] = await Promise.all([
     readJson("hero.json"),
     readJson("about.json"),
@@ -44,6 +45,7 @@ const loadMockData = async () => {
     readJson("events.json"),
     readJson("projects.json"),
     readJson("teams.json"),
+    readJson("routes.json"),
   ]);
 
   const siteData: MockData = {
@@ -57,20 +59,6 @@ const loadMockData = async () => {
     projects: projects || [],
     teams: teams || [],
   };
-
-  const routes = [
-    {
-      slug: "discord",
-      destination: "https://discord.gg/mock-link",
-      type: "redirect",
-    },
-    {
-      slug: "hub",
-      destination: "https://example.com",
-      type: "iframe",
-      title: "Resource Hub",
-    },
-  ] as any[];
 
   return { siteData, routes };
 };
@@ -103,11 +91,12 @@ const loadFirestoreData = async () => {
     readJson("resources.json"),
     readJson("team-preview.json"),
     readJson("links.json"),
+    readJson("routes.json"),
   ]);
 
   const [
-    [dbTeams, dbEvents, dbProjects, dbAnnouncements, dbRoutes],
-    [hero, about, resources, teamsPreview, links],
+    [dbTeams, dbEvents, dbProjects, dbAnnouncements],
+    [hero, about, resources, teamsPreview, links, routes],
   ] = await Promise.all([dbPromise, filePromise]);
 
   const siteData: MockData = {
@@ -123,7 +112,7 @@ const loadFirestoreData = async () => {
     links: links || [],
   };
 
-  return { siteData, routes: dbRoutes as any[] };
+  return { siteData, routes: routes as any[] };
 };
 
 const useMock = process.env.NODE_ENV === "development";
@@ -133,4 +122,5 @@ store.registerFetcher(useMock ? loadMockData : loadFirestoreData);
 
 export const dataService = {
   getInitialData: async () => store.getSiteData(),
+  getRoute: async (slug: string) => store.getRoute(slug),
 };

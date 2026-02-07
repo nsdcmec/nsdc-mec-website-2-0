@@ -84,6 +84,7 @@ class SiteStore {
     const { siteData, routes } = await this.fetcher();
 
     this.siteData = siteData;
+    console.log(routes);
 
     this.routeMap.clear();
     routes.forEach((r) => this.routeMap.set(r.slug, r));
