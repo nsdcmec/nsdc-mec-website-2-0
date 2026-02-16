@@ -94,7 +94,7 @@ export interface Event {
   description: string | null;
   image_url: string | null;
   date: string | null;
-  status: "upcoming" | "ongoing" | "recent" | "past";
+  status: "upcoming" | "recent" | "past";
   venue: string | null;
   event_type: string | null;
   tags: string[];
@@ -124,6 +124,7 @@ export interface TeamMember {
   description: string | null;
   image_url: string | null;
   social_links: SocialLinks;
+  role: string;
 }
 
 export interface TeamYear {
@@ -131,10 +132,23 @@ export interface TeamYear {
   members: TeamMember[];
 }
 
+export interface AboutCardConfig {
+  id: string;
+  type: "stats" | "reviews" | "chairman" | "general";
+  title?: string;
+  content?: string;
+  rowSpan: number;
+  colSpan: number;
+  isActive: boolean;
+  metadata?: Record<string, any>;
+}
+
 export interface AboutConfig {
   title: string;
-  desc: string;
+  subtitle?: string;
+  cards: AboutCardConfig[];
 }
+
 
 export interface HeroConfig {
   title: string;
@@ -155,6 +169,7 @@ export interface TeamMainConfig {
   subtitle: string;
   src: string;
   type: "img" | "video";
+  images?: string[];
 }
 
 export interface SlotConfig {
@@ -184,7 +199,8 @@ export interface Link {
 export interface ShortUrl {
   slug: string;
   destination_url: string;
-  is_iframe: boolean;
+  type: "iframe" | "redirect" | "embed" | "gform";
+  metadata?: Record<string, any>;
 }
 
 export interface ResourceMetadata {

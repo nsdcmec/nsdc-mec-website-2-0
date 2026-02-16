@@ -1,6 +1,7 @@
 ---
 // src/pages/[...slug].astro
-import Layout from "../layouts/IframeLayout.astro";
+import Layout from "../layouts/Layout.astro";
+import IframeLayout from "../layouts/IframeLayout.astro";
 import { dataService } from "../lib/data-service";
 
 const { slug } = Astro.params;
@@ -13,21 +14,74 @@ if (!isValidSlug) {
 }
 
 const route = await dataService.getRoute(safeSlug);
-console.log(route, "route");
+const initialData = await dataService.getInitialData();
 
-if (!route) {
+if (!route || !initialData) {
   return new Response(null, { status: 404, statusText: "Not Found" });
 }
 
+// Logic switch based on route type
 if (route.type === "redirect") {
-  return Astro.redirect(route.destination, 307);
+  return Astro.redirect(route.destination_url, 307);
 }
+
+/**
+ * Converts a standard Google Form link to its embeddable version.
+ * Standard: https://docs.google.com/forms/d/e/.../viewform
+ * Embed: https://docs.google.com/forms/d/e/.../viewform?embedded=true
+ */
+function getEmbedUrl(url: string, type: string) {
+  if (type !== "gform") return url;
+  try {
+    const urlObj = new URL(url);
+    if (
+      urlObj.hostname.includes("docs.google.com") &&
+      urlObj.pathname.includes("/viewform")
+    ) {
+      urlObj.searchParams.set("embedded", "true");
+      return urlObj.toString();
+    }
+    return url;
+  } catch (e) {
+    return url;
+  }
+}
+
+const finalUrl = getEmbedUrl(route.destination_url, route.type);
+const title = route.destination_url || "External Resource";
+const height = route.metadata?.height || "80vh";
 ---
 
-<Layout title={route.title || "External Resource"}>
-  <iframe
-    src={route.destination}
-    class="w-[100dvw] h-[100dvh] border-none overflow-hidden m-0 p-0"
-  >
-  </iframe>
-</Layout>
+{
+  route.type === "iframe" ? (
+    <IframeLayout title={title}>
+      <iframe
+        src={finalUrl}
+        class="w-[100dvw] h-[100dvh] border-none overflow-hidden m-0 p-0"
+      />
+    </IframeLayout>
+  ) : (
+    <Layout
+      title={title}
+      links={initialData.links}
+      injections={initialData.config.injections}
+    >
+      <section class="w-full flex flex-col items-center justify-center bg-bg-0 min-h-[80vh] py-12">
+        <div class="container mx-auto px-4 h-full flex flex-col">
+          <div
+            class="w-full border border-fg-0/10 rounded-lg"
+            style={{ height: height }}
+          >
+            <iframe
+              src={finalUrl}
+              class="w-full h-full border-none"
+              title={title}
+            >
+              Loading...
+            </iframe>
+          </div>
+        </div>
+      </section>
+    </Layout>
+  )
+}

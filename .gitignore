@@ -22,3 +22,5 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+scripts/migrate_club_schema.sh
+dbmanagement

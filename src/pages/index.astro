@@ -6,6 +6,7 @@ import type { HeroEventConfig } from "../types";
 import Hero from "../components/Hero.astro";
 import About from "../components/About.astro";
 import EventIsland from "../components/EventIsland";
+import TeamCarousel from "../components/TeamCarousel";
 import TeamPreview from "../components/TeamPreview.astro";
 
 const data = await dataService.getInitialData();
@@ -14,11 +15,14 @@ if (!data) {
 }
 
 const heroSlot = data.config.injections.hero_slot;
-const showHeroSlot = typeof heroSlot === 'string' ? !!heroSlot : (heroSlot?.is_active && heroSlot?.html);
+const showHeroSlot =
+  typeof heroSlot === "string"
+    ? !!heroSlot
+    : heroSlot?.is_active && heroSlot?.html;
 
 // Filter potential hero events (server just checks 'show_in_hero')
 // The client will decide which one is ACTIVE based on time
-const potentialHeroEvents = data.events.filter(e => {
+const potentialHeroEvents = data.events.filter((e) => {
   const meta = e.metadata?.hero_config as HeroEventConfig | undefined;
   return meta && meta.show_in_hero;
   //TODO update it such taht it only inclused past events
@@ -26,18 +30,27 @@ const potentialHeroEvents = data.events.filter(e => {
 ---
 
 <Layout title="NSDC MEC" links={data.links} injections={data.config.injections}>
-  <Hero 
-    config={data.config.hero} 
-    main={data.config.heroMain} 
+  <Hero
+    config={data.config.hero}
+    main={data.config.heroMain}
     announcements={data.announcements}
     heroEvents={potentialHeroEvents}
   />
-  {showHeroSlot && <div set:html={typeof heroSlot === 'string' ? heroSlot : heroSlot?.html} />}
+  {
+    showHeroSlot && (
+      <div
+        set:html={typeof heroSlot === "string" ? heroSlot : heroSlot?.html}
+      />
+    )
+  }
   <About content={data.config.about} />
 
   <EventIsland events={data.events} client:load />
-  
-  <TeamPreview 
-    config={data.config.teamMain}
+
+  <TeamCarousel
+    images={data.config.teamMain.images || [data.config.teamMain.src]}
+    title={data.config.teamMain.title}
+    subtitle={data.config.teamMain.subtitle}
+    client:load
   />
 </Layout>

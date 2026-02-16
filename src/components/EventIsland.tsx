@@ -34,9 +34,7 @@ export default function EventsIsland(props: Props) {
       // Dynamic status override from hero_config
       if (e.metadata?.hero_config) {
         const start = new Date(e.metadata.hero_config.start_date).getTime();
-        const end = new Date(e.metadata.hero_config.end_date).getTime();
         if (now < start) status = "upcoming";
-        else if (now >= start && now <= end) status = "ongoing";
         else status = "past";
       }
 
@@ -52,11 +50,12 @@ export default function EventsIsland(props: Props) {
       return { ...e, status, hasDetails };
     });
 
-    const sorted = mappedEvents.sort((a, b) => {
-      const dateA = a.date ? new Date(a.date).getTime() : 0;
-      const dateB = b.date ? new Date(b.date).getTime() : 0;
-      return dateB - dateA;
-    });
+    const sorted = mappedEvents.sort((a, b) => b.priority - a.priority);
+    // .sort((a, b) => {
+    //   const dateA = a.date ? new Date(a.date).getTime() : 0;
+    //   const dateB = b.date ? new Date(b.date).getTime() : 0;
+    //   return dateB - dateA;
+    // });
 
     const archived = sorted.filter((e) => e.status === "past");
     const active = sorted.filter((e) => e.status !== "past");
@@ -86,6 +85,7 @@ export default function EventsIsland(props: Props) {
 
     const recentStart = upcoming.length;
     const archivedStart = upcoming.length + recent.length;
+    console.log(archived);
 
     return {
       upcoming,
@@ -454,17 +454,11 @@ export default function EventsIsland(props: Props) {
               >
                 {(event, index) => {
                   const statusLabel =
-                    event.status === "upcoming"
-                      ? "Upcoming"
-                      : event.status === "ongoing"
-                        ? "Ongoing"
-                        : "Recent";
+                    event.status === "upcoming" ? "Upcoming" : "Recent";
                   const statusColor =
                     event.status === "upcoming"
                       ? "bg-primary text-primary-fg"
-                      : event.status === "ongoing"
-                        ? "bg-red-500 text-white animate-pulse"
-                        : "bg-bg-2 text-fg-1";
+                      : "bg-bg-2 text-fg-1";
 
                   return (
                     <div
@@ -645,11 +639,11 @@ export default function EventsIsland(props: Props) {
                                   <p class="text-sm font-bold text-fg-1 mt-1 mb-3 font-sans uppercase">
                                     {formatDate(event.date)}
                                   </p>
-                                    <div class="flex flex-wrap gap-1 mb-2">
+                                  <div class="flex flex-wrap gap-1 mb-2">
                                     {event.event_type && (
-                                        <span class="text-[10px] font-bold uppercase bg-primary text-primary-fg px-1.5 py-0.5">
-                                          {event.event_type}
-                                        </span>
+                                      <span class="text-[10px] font-bold uppercase bg-primary text-primary-fg px-1.5 py-0.5">
+                                        {event.event_type}
+                                      </span>
                                     )}
                                     {event.tags && (
                                       <For each={event.tags}>
@@ -716,4 +710,3 @@ export default function EventsIsland(props: Props) {
     </section>
   );
 }
-
