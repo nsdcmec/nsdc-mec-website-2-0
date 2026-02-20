@@ -8,34 +8,44 @@ import {
   createEffect,
 } from "solid-js";
 import type { Event } from "../types";
+import { parseEventDate } from "../lib/date-utils";
 
 interface Props {
   events: Event[];
 }
 
 export default function EventsIsland(props: Props) {
+  const [filter, setFilter] = createSignal("all");
+  const [sort, setSort] = createSignal("newest");
+  const [searchQuery, setSearchQuery] = createSignal("");
+  const [activeIndex, setActiveIndex] = createSignal(0);
+
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "TBA";
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return dateStr;
-    return d.toLocaleDateString("en-US", {
+    const ts = parseEventDate(dateStr);
+    if (ts === 0) return dateStr;
+    return new Date(ts).toLocaleDateString("en-US", {
       year: "numeric",
-      month: "long",
+      month: "short",
       day: "numeric",
     });
   };
 
   const processedData = createMemo(() => {
     const now = new Date().getTime();
+    const oneYearAgo = now - 365 * 24 * 60 * 60 * 1000;
 
-    // Map events to include dynamic status and details check
     const mappedEvents = props.events.map((e) => {
-      let status = e.status;
-      // Dynamic status override from hero_config
+      const ts = parseEventDate(e.date);
+      let status = "past";
+
       if (e.metadata?.hero_config) {
         const start = new Date(e.metadata.hero_config.start_date).getTime();
         if (now < start) status = "upcoming";
-        else status = "past";
+      } else if (ts >= now) {
+        status = "upcoming";
+      } else if (ts >= oneYearAgo) {
+        status = "recent";
       }
 
       const meta = e.metadata || {};
@@ -47,93 +57,50 @@ export default function EventsIsland(props: Props) {
         (meta.collaborators && meta.collaborators.length > 0)
       );
 
-      return { ...e, status, hasDetails };
+      return { ...e, computedStatus: status, ts, hasDetails };
     });
 
-    const sorted = mappedEvents.sort((a, b) => b.priority - a.priority);
-    // .sort((a, b) => {
-    //   const dateA = a.date ? new Date(a.date).getTime() : 0;
-    //   const dateB = b.date ? new Date(b.date).getTime() : 0;
-    //   return dateB - dateA;
-    // });
+    let filtered = mappedEvents;
+    if (filter() !== "all") {
+      filtered = mappedEvents.filter((e) => e.computedStatus === filter());
+    }
 
-    const archived = sorted.filter((e) => e.status === "past");
-    const active = sorted.filter((e) => e.status !== "past");
+    if (searchQuery().trim()) {
+      const q = searchQuery().trim().toLowerCase();
+      filtered = filtered.filter(
+        (e) =>
+          e.title.toLowerCase().includes(q) ||
+          e.description?.toLowerCase().includes(q) ||
+          e.tags?.some((t) => t.toLowerCase().includes(q)) ||
+          e.venue?.toLowerCase().includes(q),
+      );
+    }
 
-    // Re-filter upcoming/recent based on dynamic status if possible,
-    // or strictly by date relative to now if status is generic?
-    // The previous logic used date comparison. Let's stick to date comparison for sorting/grouping
-    // but use the computed status for display/filtering 'past'.
+    const sorted = filtered.sort((a, b) => {
+      if (sort() === "newest") return b.ts - a.ts;
+      return a.ts - b.ts;
+    });
 
-    const upcoming = active.filter(
-      (e) =>
-        e.status === "upcoming" ||
-        (e.status !== "recent" && e.date && new Date(e.date).getTime() >= now),
-    );
-    const recent = active.filter(
-      (e) =>
-        e.status === "recent" ||
-        (e.status !== "upcoming" && e.date && new Date(e.date).getTime() < now),
-    );
-
-    // De-dupe if logic overlaps (simple fallback: if in upcoming, don't put in recent)
-    // Actually simpler:
-    // Any active event that is 'upcoming' OR (not 'recent' AND future date) -> upcoming list
-    // Rest of active -> recent list
-
-    const sidebarList = [...upcoming, ...recent, ...archived];
-
-    const recentStart = upcoming.length;
-    const archivedStart = upcoming.length + recent.length;
-    console.log(archived);
-
-    return {
-      upcoming,
-      recent,
-      archived,
-      sidebarList,
-      offsets: {
-        recent: recentStart,
-        archived: archivedStart,
-      },
-    };
+    return sorted;
   });
-
-  const [activeIndex, setActiveIndex] = createSignal(0);
 
   const activeItem = () =>
-    processedData().sidebarList[activeIndex()] || { title: "No Event", id: 0 };
-
-  const archiveStatus = createMemo(() => {
-    const current = activeIndex();
-    const { archived: archivedStart } = processedData().offsets;
-    const total = processedData().sidebarList.length;
-
-    const isArchiveActive = current >= archivedStart;
-
-    return {
-      isActive: isArchiveActive,
-      hasPrev: isArchiveActive && current > archivedStart,
-      hasNext: isArchiveActive && current < total - 1,
-    };
-  });
-
-  let archiveContainerRef: HTMLDivElement | undefined;
-  let mobileNavRef: HTMLDivElement | undefined;
-  let desktopNavRef: HTMLDivElement | undefined;
+    processedData()[activeIndex()] || { title: "No Event", id: 0 };
 
   let isProgrammaticScroll = false;
   let scrollTimeout: any = null;
+  let desktopNavRef: HTMLDivElement | undefined;
+  let mobileNavRef: HTMLDivElement | undefined;
 
-  createEffect((prevIndex: number | undefined) => {
+  createEffect((prevIdx: number | undefined) => {
     const currentIdx = activeIndex();
-    const currentItem = processedData().sidebarList[currentIdx];
+    const currentItem = processedData()[currentIdx];
 
     if (!currentItem) return currentIdx;
 
     if (mobileNavRef) {
       const el = mobileNavRef.querySelector(
-        `[data-target="${currentItem.id}"]`,
+        `[data-nav="${currentItem.id}"]`,
       ) as HTMLElement;
       if (el) {
         const center =
@@ -144,7 +111,7 @@ export default function EventsIsland(props: Props) {
 
     if (desktopNavRef) {
       const el = desktopNavRef.querySelector(
-        `[data-target="${currentItem.id}"]`,
+        `[data-nav="${currentItem.id}"]`,
       ) as HTMLElement;
       if (el) {
         const center =
@@ -154,57 +121,21 @@ export default function EventsIsland(props: Props) {
     }
 
     if (isProgrammaticScroll) {
-      const isDesktop = window.matchMedia("(min-width: 768px)").matches;
-      const { archived: archivedStart } = processedData().offsets;
-
-      const isArchive = currentIdx >= archivedStart;
-      const wasArchive =
-        prevIndex !== undefined ? prevIndex >= archivedStart : false;
-
-      const shouldScrollVertical = !(isArchive && wasArchive);
-
-      if (shouldScrollVertical) {
-        if (isDesktop) {
-          const el = document.getElementById(`event-${currentItem.id}`);
-          if (el) {
-            const offset = isArchive ? 176 : 88;
-            const top =
-              el.getBoundingClientRect().top + window.pageYOffset - offset;
-            window.scrollTo({ top, behavior: "smooth" });
-          }
-        } else {
-          if (isArchive) {
-            const sectionEl = document.getElementById("past-events-section");
-            if (sectionEl) {
-              const offset = 178;
-              const top =
-                sectionEl.getBoundingClientRect().top +
-                window.pageYOffset -
-                offset;
-              window.scrollTo({ top, behavior: "smooth" });
-            }
-          } else {
-            const el = document.getElementById(`event-${currentItem.id}`);
-            if (el) {
-              const offset = 130;
-              const top =
-                el.getBoundingClientRect().top + window.pageYOffset - offset;
-              window.scrollTo({ top, behavior: "smooth" });
-            }
-          }
+      const el = document.getElementById(`event-${currentItem.id}`);
+      if (el) {
+        const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
+        let mobileOffset = 250;
+        if (!isDesktop) {
+          const headerEl = document.querySelector(".lg\\:hidden.sticky");
+          if (headerEl) mobileOffset = headerEl.clientHeight + 40;
         }
-      }
-
-      if (isArchive && archiveContainerRef) {
-        const targetEl = document.getElementById(`event-${currentItem.id}`);
-        if (targetEl) {
-          const left =
-            targetEl.offsetLeft -
-            (archiveContainerRef.clientWidth - targetEl.clientWidth) / 2;
-          archiveContainerRef.scrollTo({ left, behavior: "smooth" });
-        }
+        const offset = isDesktop ? 80 : mobileOffset;
+        const top =
+          el.getBoundingClientRect().top + window.pageYOffset - offset;
+        window.scrollTo({ top, behavior: "smooth" });
       }
     }
+
     return currentIdx;
   });
 
@@ -216,37 +147,6 @@ export default function EventsIsland(props: Props) {
       isProgrammaticScroll = false;
     }, 1000);
     setActiveIndex(index);
-  };
-
-  const cycleArchive = (direction: -1 | 1) => {
-    const nextIndex = activeIndex() + direction;
-    const { sidebarList } = processedData();
-
-    if (nextIndex >= 0 && nextIndex < sidebarList.length) {
-      isProgrammaticScroll = true;
-      if (scrollTimeout) clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => {
-        isProgrammaticScroll = false;
-      }, 1000);
-      setActiveIndex(nextIndex);
-    }
-  };
-
-  const getCenteredArchiveIndex = (container: HTMLDivElement): number => {
-    const center = container.scrollLeft + container.clientWidth / 2;
-    let closestIndex = -1;
-    let minDiff = Infinity;
-
-    for (let i = 0; i < container.children.length; i++) {
-      const el = container.children[i] as HTMLElement;
-      const itemCenter = el.offsetLeft + el.offsetWidth / 2;
-      const diff = Math.abs(center - itemCenter);
-      if (diff < minDiff) {
-        minDiff = diff;
-        closestIndex = parseInt(el.dataset.index || "-1");
-      }
-    }
-    return closestIndex;
   };
 
   onMount(() => {
@@ -264,449 +164,421 @@ export default function EventsIsland(props: Props) {
           if (idx !== -1 && idx !== activeIndex()) setActiveIndex(idx);
         }
       },
-      { rootMargin: "-40% 0px -50% 0px" },
+      { rootMargin: "-30% 0px -40% 0px" },
     );
 
-    document
-      .querySelectorAll(".vertical-event-section")
-      .forEach((el) => verticalObserver.observe(el));
+    let observedElements: Element[] = [];
 
-    const archiveSectionObserver = new IntersectionObserver(
-      (entries) => {
-        if (isProgrammaticScroll) return;
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && archiveContainerRef) {
-            const idx = getCenteredArchiveIndex(archiveContainerRef);
-            if (idx !== -1 && idx !== activeIndex()) setActiveIndex(idx);
-          }
-        });
-      },
-      { rootMargin: "-40% 0px -50% 0px" },
-    );
-    const archiveSection = document.getElementById("past-events-section");
-    if (archiveSection) archiveSectionObserver.observe(archiveSection);
-
-    const handleHorizontalScroll = () => {
-      if (isProgrammaticScroll || !archiveContainerRef || !archiveSection)
-        return;
-      const rect = archiveSection.getBoundingClientRect();
-      if (
-        rect.top < window.innerHeight / 2 &&
-        rect.bottom > window.innerHeight / 2
-      ) {
-        const idx = getCenteredArchiveIndex(archiveContainerRef);
-        if (idx !== -1 && idx !== activeIndex()) setActiveIndex(idx);
-      }
-    };
-    archiveContainerRef?.addEventListener("scroll", handleHorizontalScroll, {
-      passive: true,
-    });
-
-    onCleanup(() => {
-      verticalObserver.disconnect();
-      archiveSectionObserver.disconnect();
-      archiveContainerRef?.removeEventListener(
-        "scroll",
-        handleHorizontalScroll,
+    const observeElements = () => {
+      observedElements.forEach((el) => verticalObserver.unobserve(el));
+      observedElements = Array.from(
+        document.querySelectorAll(".event-section-item"),
       );
-      if (scrollTimeout) clearTimeout(scrollTimeout);
-    });
+      observedElements.forEach((el) => verticalObserver.observe(el));
+    };
+
+    observeElements();
+
+    // Quick hack to re-observe when solid renders new elements
+    const interval = setInterval(observeElements, 1000);
+    onCleanup(() => clearInterval(interval));
   });
 
   return (
-    <section
-      id="events"
-      class="bg-bg-0 transition-colors mt-26 duration-300 relative scroll-mt-20"
-    >
-      <div class="w-full md:px-4 ">
-        <div
-          id="mobile-header-wrapper"
-          class="md:hidden sticky top-10  z-30 bg-bg-0/85 backdrop-blur-md border-b border-bg-2"
-        >
-          <div class="flex flex-col border-b border-fg-0/20">
-            <h1 class="font-bold font-sans tracking-wide text-fg-0 text-2xl py-2 bg-bg-0/75 backdrop-blur-sm w-full border-b md:border-none border-bg-2/50 px-4">
-              EVENTS
+    <div class="bg-bg-0 md:pt-16 min-h-screen text-fg-0 font-sans">
+      {/* Mobile Sticky Header */}
+      <div class="lg:hidden sticky top-8 z-40 bg-bg-0/95 backdrop-blur-md border-b-2 border-fg-0 flex flex-col shadow-sm">
+        <div class="flex flex-col gap-3 p-4 border-b border-fg-0/10">
+          <div class="flex justify-between items-center">
+            <h1 class="text-2xl font-bold uppercase tracking-tighter">
+              Events
             </h1>
-            <div class="flex justify-between items-center h-full px-2">
-              <div
-                ref={mobileNavRef}
-                class="flex gap-1 h-full text-sm overflow-x-auto scrollbar-hide py-2 max-w-64"
+            <span class="text-[10px] font-bold uppercase tracking-widest text-primary">
+              {processedData().length} Results
+            </span>
+          </div>
+
+          {/* Search & Filters */}
+          <div class="flex flex-col gap-2 relative z-50">
+            <input
+              type="text"
+              placeholder="Search events..."
+              class="bg-bg-1 border-2 border-fg-0/10 text-xs font-bold uppercase tracking-widest p-2 w-full outline-none focus:border-primary transition-colors text-fg-0 placeholder:text-fg-1/50"
+              value={searchQuery()}
+              onInput={(e) => {
+                setSearchQuery(e.target.value);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            />
+            <div class="flex gap-2">
+              <select
+                class="bg-bg-1 border-2 border-fg-0/10 text-xs font-bold uppercase p-2 flex-1 outline-none focus:border-primary appearance-none transition-colors text-fg-0"
+                value={filter()}
+                onChange={(e) => {
+                  setFilter(e.target.value);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
               >
-                <For each={processedData().sidebarList}>
-                  {(item, index) => (
-                    <a
-                      data-target={item.id}
-                      onClick={(e) => handleNavClick(e, index())}
-                      classList={{
-                        "bg-fg-0 text-bg-0 font-bold":
-                          activeIndex() === index(),
-                        "text-fg-1 hover:text-fg-0": activeIndex() !== index(),
-                      }}
-                      class="mobile-nav-item font-sans transition-colors duration-200 px-2 h full py-1 text-xs rounded-sm shrink-0"
-                    >
-                      {String(index() + 1).padStart(2, "0")}
-                    </a>
-                  )}
-                </For>
-              </div>
-              <div class="flex flex-col items-end text-right pl-2 overflow-hidden">
-                <h3 class="font-semibold text-fg-0 truncate text-xs leading-tight w-full text-right">
-                  {activeItem().title}
-                </h3>
-              </div>
+                <option value="all">All</option>
+                <option value="upcoming">Upcoming</option>
+                <option value="recent">Recent</option>
+                <option value="past">Past</option>
+              </select>
+              <select
+                class="bg-bg-1 border-2 border-fg-0/10 text-xs font-bold uppercase p-2 flex-1 outline-none focus:border-primary appearance-none transition-colors text-fg-0"
+                value={sort()}
+                onChange={(e) => {
+                  setSort(e.target.value);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+              >
+                <option value="newest">Newest</option>
+                <option value="oldest">Oldest</option>
+              </select>
             </div>
           </div>
         </div>
 
-        <div class="md:grid md:grid-cols-6 gap-8">
-          <div class="hidden md:block relative h-full">
-            <div class="sticky top-24 flex flex-col max-h-[calc(100vh-6rem)]">
-              <h1 class="text-4xl font-bold text-fg-0 mb-4 font-sans shrink-0">
-                EVENTS
-              </h1>
-              <div
-                ref={desktopNavRef}
-                class="flex-1 min-h-0 overflow-y-auto scrollbar-hide pb-4"
-              >
-                <div class="flex flex-col gap-2">
-                  <For
-                    each={[
-                      {
-                        title: "Upcoming",
-                        data: processedData().upcoming,
-                        offset: 0,
-                        color: "bg-primary",
-                      },
-                      {
-                        title: "Recent",
-                        data: processedData().recent,
-                        offset: processedData().offsets.recent,
-                        color: "bg-fg-1",
-                      },
-                      {
-                        title: "Past Events",
-                        data: processedData().archived,
-                        offset: processedData().offsets.archived,
-                        color: "bg-bg-2 border border-fg-0",
-                      },
-                    ]}
-                  >
-                    {(group) => (
-                      <Show when={group.data.length > 0}>
-                        <div>
-                          <div class="flex items-center gap-2 mb-2 opacity-60">
-                            <span class={`w-1.5 h-1.5 ${group.color}`} />
-                            <h4 class="text-xs font-bold text-fg-1 uppercase tracking-wider">
-                              {group.title}
-                            </h4>
-                          </div>
-                          <ul class="flex flex-col gap-1 border-l border-bg-2">
-                            <For each={group.data}>
-                              {(item, i) => {
-                                const globalIndex = group.offset + i();
-                                return (
-                                  <li>
-                                    <a
-                                      data-target={item.id}
-                                      onClick={(e) =>
-                                        handleNavClick(e, globalIndex)
-                                      }
-                                      classList={{
-                                        "border-fg-0 pl-6 font-bold":
-                                          activeIndex() === globalIndex,
-                                        "border-transparent pl-4 hover:border-fg-0/30":
-                                          activeIndex() !== globalIndex,
-                                      }}
-                                      class="desktop-nav-link block w-full truncate text-nowrap py-0.5 border-l-2 group transition-all duration-200"
-                                    >
-                                      <span
-                                        class={`nav-number font-mono text-[10px] transition-colors ${activeIndex() === globalIndex ? "text-fg-0 font-bold" : "text-fg-1 group-hover:text-fg-0"}`}
-                                      >
-                                        {String(globalIndex + 1).padStart(
-                                          2,
-                                          "0",
-                                        )}
-                                      </span>
-                                      <span
-                                        class={`nav-title text-xs font-medium transition-colors ml-2 ${activeIndex() === globalIndex ? "text-fg-0 font-bold" : "text-fg-1 group-hover:text-fg-0"}`}
-                                      >
-                                        {item.title}
-                                      </span>
-                                    </a>
-                                  </li>
-                                );
-                              }}
-                            </For>
-                          </ul>
-                        </div>
-                      </Show>
-                    )}
-                  </For>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="md:col-span-5 md:mt-16 py-16 md:py-0">
-            <div class="flex flex-col border-l border-r border-fg-0/20 gap-12">
-              <For
-                each={[...processedData().upcoming, ...processedData().recent]}
-              >
-                {(event, index) => {
-                  const statusLabel =
-                    event.status === "upcoming" ? "Upcoming" : "Recent";
-                  const statusColor =
-                    event.status === "upcoming"
-                      ? "bg-primary text-primary-fg"
-                      : "bg-bg-2 text-fg-1";
-
-                  return (
-                    <div
-                      id={`event-${event.id}`}
-                      data-index={index()}
-                      class="vertical-event-section w-full border-b border-t border-fg-0/20 justify-center scroll-mt-32 md:scroll-mt-8"
-                    >
-                      <Show
-                        when={!event.custom_html}
-                        fallback={
-                          <div
-                            innerHTML={event.custom_html || ""}
-                            class="w-full"
-                          />
-                        }
-                      >
-                        <div class="grid md:grid-cols-2 gap-4 grid-rows-7 md:grid-rows-1 h-full">
-                          <div class="col-span-1 row-span-3 md:row-span-1">
-                            <img
-                              src={event.image_url || ""}
-                              alt={event.title}
-                              class="w-full h-full max-h-72 md:max-h-full md:h-auto object-cover md:aspect-square bg-bg-2"
-                              loading="lazy"
-                            />
-                          </div>
-                          <div class="col-span-1 row-span-4 md:row-span-1 h-full flex flex-col justify-between py-0 px-2 md:px-0 pb-2 md:pb-4 md:py-4">
-                            <div>
-                              <div class="flex flex-wrap gap-2 mb-3">
-                                <div
-                                  class={`w-max text-[0.6rem] font-bold uppercase tracking-widest px-2 py-0.5 ${statusColor}`}
-                                >
-                                  {statusLabel}
-                                </div>
-                                {event.event_type && (
-                                  <span class="text-[0.6rem] font-bold uppercase tracking-widest bg-primary text-primary-fg px-2 py-0.5">
-                                    {event.event_type}
-                                  </span>
-                                )}
-                              </div>
-                              <h2 class="text-4xl md:text-5xl lg:text-6xl leading-none font-bold text-fg-0 font-sans mb-3">
-                                {event.title}
-                              </h2>
-                              <p class="font-semibold text-fg-1 mb-4 font-sans uppercase">
-                                {formatDate(event.date)}
-                              </p>
-                              {event.tags && (
-                                <div class="flex flex-wrap gap-1 mb-4">
-                                  <For each={event.tags}>
-                                    {(tag) => (
-                                      <span class="text-[10px] font-bold uppercase tracking-tight bg-bg-2 text-fg-1 px-2 py-0.5 border border-fg-0/5 rounded-sm">
-                                        {tag}
-                                      </span>
-                                    )}
-                                  </For>
-                                </div>
-                              )}
-                            </div>
-                            <div>
-                              <p class="text-fg-0 font-bold font-sans text-md leading-relaxed">
-                                {event.description}
-                              </p>
-                              <div class="mt-6">
-                                <Show
-                                  when={event.hasDetails}
-                                  fallback={
-                                    <Show when={event.link}>
-                                      <a
-                                        href={event.link || "#"}
-                                        target="_blank"
-                                        class="inline-block py-3 px-6 font-medium bg-primary text-primary-fg hover:opacity-90 transition-opacity"
-                                      >
-                                        {event.button_text || "Register Now"}
-                                      </a>
-                                    </Show>
-                                  }
-                                >
-                                  <a
-                                    href={`/event/${event.id}`}
-                                    class="inline-block py-3 px-6 font-medium bg-fg-0 text-bg-0 hover:opacity-90 transition-opacity"
-                                  >
-                                    {event.button_text || "View Details"}
-                                  </a>
-                                </Show>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </Show>
-                    </div>
-                  );
-                }}
-              </For>
-
-              <Show when={processedData().archived.length > 0}>
-                <div
-                  id="past-events-section"
-                  class="relative group/scroller h-full w-full scroll-mt-32 md:scroll-mt-8"
+        {/* Mobile Nav Scroll (spy index) */}
+        <div class="flex justify-between items-center h-[48px] px-2 bg-bg-0 w-full relative z-40">
+          <div
+            ref={mobileNavRef}
+            class="flex gap-1 h-full text-sm overflow-x-auto scrollbar-hide py-2 max-w-[65%]"
+          >
+            <For each={processedData()}>
+              {(item, index) => (
+                <a
+                  data-nav={item.id}
+                  onClick={(e) => handleNavClick(e, index())}
+                  class={`mobile-nav-item font-mono transition-colors duration-200 px-3 flex items-center justify-center text-[10px] border-2 text-nowrap shrink-0 cursor-pointer ${activeIndex() === index()
+                    ? "bg-fg-0 text-bg-0 border-fg-0 font-bold"
+                    : "bg-bg-0 text-fg-1 border-transparent hover:border-fg-0/30 hover:text-fg-0"
+                    }`}
                 >
-                  <div class="flex justify-between left-0 items-center mb-4 bg-bg-0/85 backdrop-blur-sm py-2 px-2">
-                    <h2 class="mt-2 text-4xl sm:text-5xl font-serif font-medium text-fg-0">
-                      Past Events
-                    </h2>
-                    <div class="flex items-center gap-1">
-                      <button
-                        class="p-2 bg-bg-2 hover:bg-bg-2/80 text-fg-0 transition-colors cursor-pointer disabled:opacity-30"
-                        disabled={!archiveStatus().hasPrev}
-                        onClick={() => cycleArchive(-1)}
-                      >
-                        <svg
-                          class="w-6 h-6"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="1.5"
-                            d="M15 19l-7-7 7-7"
-                          />
-                        </svg>
-                      </button>
-                      <button
-                        class="p-2 bg-bg-2 hover:bg-bg-2/80 text-fg-0 transition-colors cursor-pointer disabled:opacity-30"
-                        disabled={!archiveStatus().hasNext}
-                        onClick={() => cycleArchive(1)}
-                      >
-                        <svg
-                          class="w-6 h-6"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="1.5"
-                            d="M9 5l7 7-7 7"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div
-                    ref={archiveContainerRef}
-                    class="flex flex-row overflow-x-auto snap-x snap-mandatory sm:gap-6 gap-[4vw] scrollbar-hide border-fg-0/20 border-t border-b"
-                  >
-                    <For each={processedData().archived}>
-                      {(event, i) => (
-                        <div
-                          id={`event-${event.id}`}
-                          data-index={processedData().offsets.archived + i()}
-                          class="snap-start shrink-0 w-[92vw] sm:max-w-172 border-l border-r border-fg-0/20"
-                        >
-                          <Show
-                            when={!event.custom_html}
-                            fallback={
-                              <div
-                                innerHTML={event.custom_html || ""}
-                                class="w-full h-full"
-                              />
-                            }
-                          >
-                            <div class="grid grid-cols-1 sm:grid-cols-2 items-center h-full">
-                              <div class="h-full w-full overflow-hidden">
-                                <img
-                                  src={event.image_url || ""}
-                                  alt={event.title}
-                                  class="w-full h-full object-cover"
-                                />
-                              </div>
-                              <div class="flex flex-col justify-between h-full p-2">
-                                <div>
-                                  <h3 class="text-3xl sm:text-4xl font-sans text-fg-0 font-semibold leading-tight">
-                                    {event.title}
-                                  </h3>
-                                  <p class="text-sm font-bold text-fg-1 mt-1 mb-3 font-sans uppercase">
-                                    {formatDate(event.date)}
-                                  </p>
-                                  <div class="flex flex-wrap gap-1 mb-2">
-                                    {event.event_type && (
-                                      <span class="text-[10px] font-bold uppercase bg-primary text-primary-fg px-1.5 py-0.5">
-                                        {event.event_type}
-                                      </span>
-                                    )}
-                                    {event.tags && (
-                                      <For each={event.tags}>
-                                        {(tag) => (
-                                          <span class="text-[10px] font-bold uppercase bg-bg-2 text-fg-1 px-1.5 py-0.5 border border-fg-0/5 rounded-sm">
-                                            {tag}
-                                          </span>
-                                        )}
-                                      </For>
-                                    )}
-                                  </div>
-                                </div>
-                                <div>
-                                  <p class="text-fg-0 text-sm mb-4 font-sans line-clamp-3 leading-relaxed">
-                                    {event.description}
-                                  </p>
-                                  <div class="flex gap-2">
-                                    <Show
-                                      when={event.hasDetails}
-                                      fallback={
-                                        <Show when={event.link}>
-                                          <a
-                                            href={event.link || "#"}
-                                            target="_blank"
-                                            class="inline-block py-1 px-2 text-sm font-bold bg-fg-0 text-bg-0/80 hover:bg-fg-0/80 hover:text-bg-0 transition-colors"
-                                          >
-                                            Visit
-                                          </a>
-                                        </Show>
-                                      }
-                                    >
-                                      <a
-                                        href={`/event/${event.id}`}
-                                        class="inline-block py-1 px-2 text-sm font-bold bg-fg-0 text-bg-0/80 hover:bg-fg-0/80 hover:text-bg-0 transition-colors"
-                                      >
-                                        View Details
-                                      </a>
-                                    </Show>
-
-                                    <Show when={event.report_url}>
-                                      <a
-                                        href={event.report_url || "#"}
-                                        class="inline-block py-1 px-2 text-sm font-bold bg-bg-2 text-fg-0/80 hover:bg-bg-2/80 hover:text-fg-0 transition-colors"
-                                      >
-                                        View Report
-                                      </a>
-                                    </Show>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </Show>
-                        </div>
-                      )}
-                    </For>
-                  </div>
-                </div>
-              </Show>
-            </div>
+                  {String(index() + 1).padStart(2, "0")}
+                </a>
+              )}
+            </For>
+            <Show when={processedData().length === 0}>
+              <span class="text-[10px] font-bold uppercase text-fg-1 tracking-widest py-1 flex items-center">
+                No Events
+              </span>
+            </Show>
+          </div>
+          <div class="flex flex-col items-end justify-center text-right pl-3 overflow-hidden flex-1 border-l border-fg-0/10 h-full">
+            <h3 class="font-bold text-fg-0 uppercase tracking-tight truncate w-full text-right text-xl">
+              {processedData().length > 0 ? activeItem().title : ""}
+            </h3>
           </div>
         </div>
       </div>
-      <style>{`.scrollbar-hide::-webkit-scrollbar { display: none; } .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }`}</style>
-    </section>
+
+      <section class=" bg-bg-0 transition-colors duration-300">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            {/* Desktop Sidebar */}
+            <div class="hidden lg:block lg:col-span-3">
+              <div class="sticky top-24 max-h-[calc(100vh-8rem)] flex flex-col">
+                <h1 class="text-4xl md:text-6xl font-bold text-fg-0 uppercase tracking-tighter leading-tight mb-8">
+                  Events
+                </h1>
+
+                {/* Search & Sort Area */}
+                <div class="flex flex-col gap-4 mb-6 border-b-2 border-fg-0/10 pb-6 pr-2">
+                  <div class="flex flex-col gap-1 w-full">
+                    <label class="text-[9px] font-bold uppercase tracking-[0.2em] text-fg-1">
+                      Search
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Title, venue, tags..."
+                      class="bg-bg-0 border-2 border-fg-0 text-xs font-bold uppercase tracking-widest p-2 outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all w-full placeholder:text-fg-1/40"
+                      value={searchQuery()}
+                      onInput={(e) => {
+                        setSearchQuery(e.target.value);
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
+                    />
+                  </div>
+                  <div class="flex flex-col gap-1 w-full">
+                    <label class="text-[9px] font-bold uppercase tracking-[0.2em] text-fg-1">
+                      Filter
+                    </label>
+                    <select
+                      class="bg-bg-0 border-2 border-fg-0 text-xs font-bold uppercase tracking-widest p-2 outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer appearance-none"
+                      value={filter()}
+                      onChange={(e) => {
+                        setFilter(e.target.value);
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
+                    >
+                      <option value="all">All Events</option>
+                      <option value="upcoming">Upcoming</option>
+                      <option value="recent">Recent</option>
+                      <option value="past">Past</option>
+                    </select>
+                  </div>
+                  <div class="flex flex-col gap-1 w-full">
+                    <label class="text-[9px] font-bold uppercase tracking-[0.2em] text-fg-1">
+                      Sort by
+                    </label>
+                    <select
+                      class="bg-bg-0 border-2 border-fg-0 text-xs font-bold uppercase tracking-widest p-2 outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer appearance-none"
+                      value={sort()}
+                      onChange={(e) => {
+                        setSort(e.target.value);
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
+                    >
+                      <option value="newest">Newest First</option>
+                      <option value="oldest">Oldest First</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Sidebar Navigation grouped by status */}
+                <div
+                  class="flex-1 overflow-y-auto scrollbar-hide pr-2 pb-8"
+                  ref={desktopNavRef}
+                >
+                  <ul class="flex flex-col gap-4 border-l-2 border-bg-2">
+                    <For each={["upcoming", "recent", "past"]}>
+                      {(group) => {
+                        const items = () =>
+                          processedData()
+                            .map((item, index) => ({
+                              item,
+                              globalIndex: index,
+                            }))
+                            .filter((x) => x.item.computedStatus === group);
+
+                        return (
+                          <Show when={items().length > 0}>
+                            <li>
+                              <div class="py-1 pl-4 border-l-2 border-transparent -ml-[2px] text-[10px] font-bold uppercase tracking-[0.2em] text-fg-1/70 mb-2">
+                                {group}
+                              </div>
+                              <ul class="flex flex-col">
+                                <For each={items()}>
+                                  {({ item, globalIndex }) => (
+                                    <li>
+                                      <a
+                                        data-nav={item.id}
+                                        onClick={(e) =>
+                                          handleNavClick(e, globalIndex)
+                                        }
+                                        class={`desktop-nav-link flex items-center gap-3 py-1.5 pl-4 border-l-2 -ml-[2px] transition-all cursor-pointer group ${activeIndex() === globalIndex
+                                          ? "border-fg-0 font-bold text-fg-0 bg-bg-1"
+                                          : "border-transparent text-fg-1 hover:border-fg-0/30 hover:text-fg-0"
+                                          }`}
+                                      >
+                                        <span
+                                          class={`text-[9px] font-mono shrink-0 w-[20px] ${activeIndex() === globalIndex ? "text-primary" : "text-fg-1/40 group-hover:text-fg-1"}`}
+                                        >
+                                          {String(globalIndex + 1).padStart(
+                                            2,
+                                            "0",
+                                          )}
+                                        </span>
+                                        <span
+                                          class={`text-[10px] font-bold uppercase tracking-wider truncate ${activeIndex() === globalIndex ? "text-fg-0" : "text-fg-1/80 group-hover:text-fg-0"}`}
+                                        >
+                                          {item.title}
+                                        </span>
+                                      </a>
+                                    </li>
+                                  )}
+                                </For>
+                              </ul>
+                            </li>
+                          </Show>
+                        );
+                      }}
+                    </For>
+                    <Show when={processedData().length === 0}>
+                      <li class="pl-4 py-2 text-xs font-bold uppercase tracking-widest text-fg-1">
+                        No items match criteria
+                      </li>
+                    </Show>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Main Content Area */}
+            <div class="lg:col-span-9 flex flex-col min-h-[50vh]">
+              <div class="w-full flex justify-between items-center mb-6 pt-2 md:pt-0">
+                <p class="text-[10px] font-mono font-bold uppercase tracking-widest text-fg-1">
+                  Showing {processedData().length} results
+                </p>
+                <Show when={filter() !== "all"}>
+                  <span class="text-[10px] font-bold uppercase bg-fg-0 text-bg-0 px-2 py-1 tracking-widest">
+                    {filter()}
+                  </span>
+                </Show>
+              </div>
+
+              <div class="flex flex-col  ">
+                <For each={["upcoming", "recent", "past"]}>
+                  {(group) => {
+                    const groupEvents = () =>
+                      processedData().filter((e) => e.computedStatus === group);
+
+                    return (
+                      <Show when={groupEvents().length > 0}>
+                        <div class="flex flex-col gap-6">
+                          {/* Sticky Header for Group */}
+                          <div class="sticky top-[180px] lg:top-10 z-30 bg-bg-0 py-2 ">
+                            <div class="flex items-center gap-4 border-b-2 border-fg-0/10">
+                              <h2 class="text-2xl font-bold uppercase tracking-widest text-fg-0 pb-2">
+                                {group}
+                              </h2>
+                            </div>
+                          </div>
+
+                          <div class="flex flex-col ">
+                            <For each={groupEvents()}>
+                              {(event) => {
+                                const index = () =>
+                                  processedData().findIndex((e) => e.id === event.id);
+                                const isPast = event.computedStatus === "past";
+                                const isUpcoming = event.computedStatus === "upcoming";
+
+                                return (
+                                  <div
+                                    class={`event-section-item flex flex-col border-2 border-fg-0 rounded-none w-full relative mb-8 z-10 transition-all overflow-hidden ${isPast ? "opacity-90 grayscale-[15%]" : ""} bg-bg-0`}
+                                    id={`event-${event.id}`}
+                                    data-index={index()}
+                                  >
+                                      <Show when={event.image_url}>
+                                        <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none opacity-50 flex items-center justify-center">
+                                          <img
+                                            src={event.image_url as string}
+                                            class={`w-[150%] h-[150%] max-w-none object-cover blur-[60px] saturate-300 ${isUpcoming&&"animate-spin-slow"} rounded-full`}
+                                            alt=""
+                                          />
+                                        </div>
+                                      </Show>
+                                      <div class={`absolute inset-0 backdrop-blur-[30px] ${isUpcoming?"bg-bg-0/10":"bg-bg-0/70"} z-0 pointer-events-none`} />
+                                    {/* Consistent 1:1 image area with grid md:grid-cols-2 for every card */}
+                                    <div class="grid md:grid-cols-2 relative z-10">
+                                      {/* Image Section */}
+                                      <div class="p-4 md:pr-0 overflow-hidden aspect-square">
+                                        <Show
+                                          when={event.image_url}
+                                          fallback={
+                                            <div class="w-full h-full flex items-center justify-center text-fg-1/20 font-sans font-bold text-6xl uppercase tracking-tighter">
+                                              NSDC
+                                            </div>
+                                          }
+                                        >
+                                          <img
+                                            src={event.image_url as string}
+                                            alt={event.title}
+                                            class="w-full h-full transition-transform duration-700"
+                                          />
+                                        </Show>
+                                      </div>
+
+                                      {/* Content Section */}
+                                      <div class="flex flex-col p-6">
+                                        <div class="flex items-center gap-3 mb-6 flex-wrap">
+                                          <span
+                                            class={`text-xs font-mono font-bold uppercase tracking-widest ${event.computedStatus === "upcoming" ? "text-primary" : "text-fg-1"}`}
+                                          >
+                                            {formatDate(event.date)}
+                                          </span>
+                                          <span class="w-[4px] h-[4px] bg-fg-0/20 rounded-full"></span>
+                                          {event.venue && (
+                                            <span class="text-xs font-mono font-bold text-fg-1 uppercase tracking-widest">
+                                              {event.venue}
+                                            </span>
+                                          )}
+                                          {event.event_type && (
+                                            <span class="text-[9px] font-bold bg-primary text-primary-fg px-2 py-[2px] rounded-sm uppercase tracking-wider ml-auto">
+                                              {event.event_type}
+                                            </span>
+                                          )}
+                                        </div>
+
+                                        <h3 class="font-bold text-fg-0 uppercase tracking-tighter mb-4 text-3xl xl:text-4xl leading-[1.1]">
+                                          {event.title}
+                                        </h3>
+
+                                        <Show when={event.description}>
+                                          <p class="text-sm xl:text-base text-fg-1 font-sans leading-relaxed mb-8 line-clamp-4 italic opacity-80">
+                                            {event.description}
+                                          </p>
+                                        </Show>
+
+                                        <div class="flex gap-4 mt-auto border-t-2 border-fg-0/10 pt-6">
+                                          <a
+                                            href={`/event/${event.id}`}
+                                            class="relative group text-xs font-bold uppercase tracking-widest text-fg-0 hover:text-primary transition-colors py-2"
+                                          >
+                                            <span>
+                                              {event.button_text || "View Details"}
+                                            </span>
+                                            <span class="absolute bottom-0 right-0 h-[2px] w-full bg-primary transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover:scale-x-100 group-hover:origin-left" />
+                                          </a>
+                                          <Show when={event.link}>
+                                            <a
+                                              href={event.link || "#"}
+                                              target="_blank"
+                                              class="relative group text-xs font-bold uppercase tracking-widest text-fg-0 hover:text-primary transition-colors py-2"
+                                            >
+                                              <span>{event.button_text || "Visit"}</span>
+                                              <span class="absolute bottom-0 right-0 h-[2px] w-full bg-primary transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover:scale-x-100 group-hover:origin-left" />
+                                            </a>
+                                          </Show>
+
+                                          <Show when={event.report_url}>
+                                            <a
+                                              href={event.report_url || "#"}
+                                              class="relative group text-xs font-bold uppercase tracking-widest text-fg-1 hover:text-fg-0 transition-colors py-2 pl-4 border-l-2 border-bg-2"
+                                            >
+                                              <span>Read Report</span>
+                                              <span class="absolute bottom-0 right-0 h-[2px] w-full bg-fg-0 transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover:scale-x-100 group-hover:origin-left" />
+                                            </a>
+                                          </Show>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              }}
+                            </For>
+                          </div>
+                        </div>
+                      </Show>
+                    );
+                  }}
+                </For>
+
+                <Show when={processedData().length === 0}>
+                  <div class="w-full flex items-center justify-center p-12 border-2 border-fg-0 bg-bg-1">
+                    <p class="font-bold uppercase tracking-widest text-fg-1">
+                      No events found matching your filter.
+                    </p>
+                  </div>
+                </Show>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <style>{`
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        select { -webkit-appearance: none; -moz-appearance: none; text-indent: 1px; text-overflow: ''; }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+          animation: spin 30s linear infinite;
+        }
+      `}</style>
+    </div >
   );
 }

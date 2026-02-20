@@ -1,0 +1,18 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { dataService } from "../lib/data-service";
+import EventsIsland from "../components/EventIsland";
+
+const data = await dataService.getInitialData();
+if (!data) {
+  throw new Error("Failed to load initial data for the events page.");
+}
+---
+
+<Layout
+  title="Events | NSDC MEC"
+  links={data.links}
+  injections={data.config.injections}
+>
+  <EventsIsland events={data.events} client:load />
+</Layout>

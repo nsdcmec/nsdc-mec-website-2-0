@@ -107,12 +107,9 @@ export interface Event {
 }
 
 // 3. Team Members
-export interface SocialLinks {
-  linkedin?: string;
-  github?: string;
-  twitter?: string;
-  instagram?: string;
-  website?: string;
+export interface SocialLink {
+  name: string;
+  url: string;
 }
 
 export interface TeamMember {
@@ -123,7 +120,7 @@ export interface TeamMember {
   priority: number;
   description: string | null;
   image_url: string | null;
-  social_links: SocialLinks;
+  social_links: SocialLink[];
   role: string;
 }
 

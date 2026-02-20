@@ -2,6 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import { dataService } from "../../lib/data-service";
 import type { Event } from "../../types";
+import { parseEventDate } from "../../lib/date-utils";
 
 const { id } = Astro.params;
 const data = await dataService.getInitialData();
@@ -15,11 +16,11 @@ if (!event) {
 
 const formattedDate = (() => {
   if (!event.date) return "TBA";
-  const d = new Date(event.date);
-  if (isNaN(d.getTime())) return event.date;
-  return d.toLocaleDateString("en-US", {
+  const ts = parseEventDate(event.date);
+  if (ts === 0) return event.date;
+  return new Date(ts).toLocaleDateString("en-US", {
     year: "numeric",
-    month: "long",
+    month: "short",
     day: "numeric",
   });
 })();
@@ -33,7 +34,19 @@ const statusColors = {
   past: "bg-bg-2 text-fg-1",
 };
 
-const currentStatus = event.status || "upcoming";
+const currentStatus = (() => {
+  const ts = parseEventDate(event.date);
+  const now = new Date().getTime();
+  const oneYearAgo = now - 365 * 24 * 60 * 60 * 1000;
+
+  if (event.metadata?.hero_config) {
+    const start = new Date(event.metadata.hero_config.start_date).getTime();
+    if (now < start) return "upcoming";
+  }
+  if (ts >= now) return "upcoming";
+  if (ts >= oneYearAgo) return "recent";
+  return "past";
+})();
 ---
 
 <Layout
@@ -41,141 +54,351 @@ const currentStatus = event.status || "upcoming";
   links={data.links}
   injections={data.config.injections}
 >
-  <article
-    class="bg-bg-0 min-h-screen flex flex-col items-center py-12 md:py-20 transition-colors duration-300"
-  >
-    <div class="container max-w-5xl px-4 sm:px-6">
-      <div class="mb-8">
-        <a
-          href="/#events"
-          class="inline-flex items-center gap-2 text-sm font-bold text-fg-1 hover:text-primary transition-colors"
-        >
-          <svg
-            class="w-4 h-4 rotate-180"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            ><path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg
-          >
-          Back to Events
+    {/* Mobile Sticky Header */}
+    <div class="lg:hidden sticky top-10 z-40 bg-bg-0/95 backdrop-blur-md border-b-2 border-fg-0 flex flex-col pt-4 pb-4 px-4 shadow-sm gap-3">
+      <div class="flex items-center justify-between">
+        <a href="/events" class="text-xs font-bold uppercase tracking-widest text-fg-1 hover:text-fg-0 transition-colors">
+          ← Back
         </a>
-      </div>
-
-      {/* Header Section */}
-      <header class="border-b border-bg-2 pb-8 mb-12">
-        <div class="flex flex-wrap gap-3 mb-6 items-center">
-          <span
-            class={`px-3 py-1 text-xs font-bold uppercase tracking-widest rounded-sm ${statusColors[currentStatus] || "bg-bg-2 text-fg-1"}`}
-          >
-            {currentStatus}
+        {currentStatus === "past" && (
+          <span class="text-xs font-bold uppercase tracking-widest text-fg-0 border border-fg-0 px-3 py-1 bg-bg-1">
+            Event Ended
           </span>
-          {
-            event.event_type && (
-              <span class="text-xs font-bold bg-primary text-primary-fg px-2 py-1 rounded-sm uppercase tracking-wider">
-                {event.event_type}
-              </span>
-            )
-          }
-          {
-            event.tags &&
-              event.tags.map((tag) => (
-                <span class="text-xs font-bold bg-bg-2 text-fg-1/80 px-2 py-1 rounded-sm uppercase tracking-tight border border-fg-0/5">
-                  {tag}
-                </span>
-              ))
-          }
-        </div>
-
-        <h1
-          class="text-4xl md:text-6xl font-serif font-bold text-fg-0 leading-tight mb-6"
-        >
-          {event.title}
-        </h1>
-
-        <div class="flex flex-col md:flex-row gap-6 md:items-center text-fg-1 font-mono text-sm uppercase tracking-wider">
-          <div class="flex items-center gap-2">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
+        )}
+      </div>
+      <h1 class="text-3xl sm:text-4xl font-black uppercase tracking-tighter leading-tight break-words">
+        {event.title}
+      </h1>
+      <div class="flex items-start gap-4 mt-1">
+        <span class={`px-3 py-1 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] border-2 border-fg-0 shrink-0 ${currentStatus === "upcoming" ? "bg-primary text-primary-fg border-primary" : "bg-bg-0 text-fg-0"}`}>
+          {currentStatus}
+        </span>
+        <div class="flex flex-col gap-1 pt-[2px]">
+          <span class="text-[10px] sm:text-xs font-mono font-bold text-fg-1 uppercase tracking-widest">
             {formattedDate}
-          </div>
+          </span>
           {event.venue && (
-            <div class="flex items-center gap-2">
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
+            <span class="text-[10px] sm:text-xs font-mono font-bold text-fg-1 uppercase tracking-widest leading-tight">
               {event.venue}
-            </div>
+            </span>
           )}
         </div>
-      </header>
+      </div>
+      {currentStatus !== "past" && event.link && (
+        <a
+          href={event.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="block w-full py-3 mt-2 text-center text-xs font-bold uppercase tracking-widest bg-primary text-primary-fg hover:bg-fg-0 hover:text-bg-0 transition-colors border-2 border-primary hover:border-fg-0"
+        >
+          {event.button_text || "Register Now"}
+        </a>
+      )}
+    </div>
 
-      <div class="grid lg:grid-cols-3 gap-12">
-        {/* Main Content Column */}
-        <div class="lg:col-span-2 space-y-12">
-          {/* Main Image */}
-          <figure
-            class="bg-bg-2 rounded-sm overflow-hidden shadow-sm border border-bg-2"
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 mt-8 lg:mt-24">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+        {/* Sidebar Header (Date, Venue, Tags, Contact, Event Ended, Registration) */}
+        <div class="hidden lg:flex lg:col-span-3 lg:sticky lg:top-10 space-y-12 pb-12 self-start flex-col">
+          <a
+            href="/events"
+            class="hidden lg:inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-fg-1 hover:text-fg-0 transition-colors mb-4"
           >
+            ← Back to Events
+          </a>
+
+          <div class="lg:hidden mb-4">
+            <a href="/events" class="text-[10px] font-bold uppercase tracking-widest text-fg-1 hover:text-fg-0 transition-colors">
+              ← Back
+            </a>
+          </div>
+
+        <div class="space-y-6">
+          <h1
+            class="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter leading-[0.9] text-fg-0 break-words"
+          >
+            {event.title}
+          </h1>
+
+          <div class="flex flex-wrap gap-2 items-center">
+            <span
+              class={`px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em] border-2 border-fg-0 ${currentStatus === "upcoming" ? "bg-primary text-primary-fg border-primary" : "bg-bg-0 text-fg-0"}`}
+            >
+              {currentStatus}
+            </span>
             {
-              event.image_url && (
-                <img
-                  src={event.image_url}
-                  alt={event.title}
-                  class="w-full h-auto max-h-[500px] object-cover"
-                />
+              event.event_type && (
+                <span class="text-[10px] font-bold uppercase tracking-[0.2em] bg-bg-2 text-fg-1 px-2 py-1 border-2 border-bg-2">
+                  {event.event_type}
+                </span>
               )
             }
-          </figure>
+          </div>
 
-          {/* Description */}
-          <div class="prose-content text-fg-0/90 font-sans text-lg leading-relaxed space-y-6">
-            <h3 class="text-2xl font-bold font-serif text-fg-0">About the Event</h3>
-             {
+          <div class="flex flex-col gap-4 border-l-2 border-fg-0 pl-4 py-2">
+            <div class="flex flex-col">
+              <span
+                class="text-[9px] font-mono font-bold text-fg-1 uppercase tracking-widest mb-1"
+              >
+                Date
+              </span>
+              <span
+                class="text-lg font-bold text-fg-0 uppercase tracking-tight"
+              >
+                {formattedDate}
+              </span>
+            </div>
+
+            {
+              event.venue && (
+                <div class="flex flex-col">
+                  <span class="text-[9px] font-mono font-bold text-fg-1 uppercase tracking-widest mb-1">
+                    Venue
+                  </span>
+                  <span class="text-lg font-bold text-fg-0 uppercase tracking-tight">
+                    {event.venue}
+                  </span>
+                </div>
+              )
+            }
+          </div>
+
+          {
+            event.tags && event.tags.length > 0 && (
+              <div class="flex flex-wrap gap-2 pt-4">
+                {event.tags.map((tag) => (
+                  <span class="text-[10px] font-bold bg-bg-1 text-fg-1 px-2 py-1 uppercase tracking-widest border border-bg-2">
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            )
+          }
+
+          {/* Registration / Contacts */}
+          <div class="pt-8 border-t-2 border-fg-0/10 flex flex-col gap-8">
+            {
+              currentStatus === "past" && (
+                <div class="flex flex-col border-2 border-fg-0 p-6 bg-bg-1">
+                  <h3 class="text-xl font-bold uppercase tracking-tighter text-fg-0 mb-2">
+                    Event Ended
+                  </h3>
+                  <p class="text-fg-1 text-xs font-sans mb-4">
+                    This event has already concluded.
+                  </p>
+                  {event.report_url && (
+                    <a
+                      href={event.report_url}
+                      class="group relative w-max inline-block font-bold uppercase tracking-widest text-fg-0 hover:text-primary transition-colors py-1 text-xs"
+                    >
+                      <span>Read Report</span>
+                      <span class="absolute bottom-0 right-0 h-[2px] w-full bg-primary transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover:scale-x-100 group-hover:origin-left" />
+                    </a>
+                  )}
+                </div>
+              )
+            }
+
+            {/* Registration Details */}
+            <div class="flex flex-col">
+              <h3 class="text-[10px] font-bold uppercase tracking-widest text-fg-1 mb-4 border-b-2 border-bg-2 pb-2">
+                Registration details
+              </h3>
+              {
+                meta.fees && meta.fees.length > 0 ? (
+                  <div class="space-y-4 mb-6">
+                    {meta.fees.map((fee) => (
+                      <div class="flex flex-col">
+                        <span class="text-[10px] font-bold text-fg-1 uppercase tracking-widest mb-1">
+                          {fee.label}
+                        </span>
+                        <span class="text-lg font-bold uppercase tracking-tighter text-fg-0">
+                          {fee.amount}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p class="text-fg-1 text-xs italic mb-6">
+                    No specific registration fees.
+                  </p>
+                )
+              }
+
+              {
+                currentStatus !== "past" && event.link && (
+                  <a
+                    href={event.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="block w-full py-4 text-center text-sm font-bold uppercase tracking-widest bg-primary text-primary-fg hover:bg-fg-0 hover:text-bg-0 transition-colors border-2 border-primary hover:border-fg-0"
+                  >
+                    {event.button_text || "Register Now"}
+                  </a>
+                )
+              }
+            </div>
+
+            {/* Contacts */}
+            {
+              meta.contacts && meta.contacts.length > 0 && (
+                <div class="flex flex-col border-t-2 border-bg-2 pt-8">
+                  <h3 class="text-[10px] font-bold uppercase tracking-widest text-fg-1 mb-4 border-b-2 border-bg-2 pb-2">
+                    Contact
+                  </h3>
+                  <div class="space-y-4 text-sm">
+                    {meta.contacts.map((contact) => (
+                      <div class="flex flex-col">
+                        <p class="font-bold uppercase tracking-tight text-fg-0 mb-1">
+                          {contact.name}
+                        </p>
+                        {contact.role && (
+                          <p class="text-[9px] font-bold uppercase tracking-widest text-fg-1 mb-2">
+                            {contact.role}
+                          </p>
+                        )}
+                        <div class="flex flex-col gap-1 mt-1">
+                          {contact.phone && (
+                            <a
+                              href={`tel:${contact.phone}`}
+                              class="group relative w-max text-xs text-fg-0 font-mono hover:text-primary transition-colors py-1"
+                            >
+                              <span>{contact.phone}</span>
+                              <span class="absolute bottom-0 right-0 h-[1px] w-full bg-primary transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover:scale-x-100 group-hover:origin-left" />
+                            </a>
+                          )}
+                          {contact.email && (
+                            <a
+                              href={`mailto:${contact.email}`}
+                              class="group relative w-max text-xs text-fg-0 font-mono hover:text-primary transition-colors py-1"
+                            >
+                              <span>{contact.email}</span>
+                              <span class="absolute bottom-0 right-0 h-[1px] w-full bg-primary transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover:scale-x-100 group-hover:origin-left" />
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )
+            }
+          </div>
+        </div>
+      </div> {/* Fix missing closure for lg:col-span-4 */}
+
+        {/* Main Content Area */}
+        <div class="lg:col-span-9 flex flex-col gap-16 pb-16">
+        
+        {/* Mobile Info Display (shown only on mobile) */}
+        {
+          event.tags && event.tags.length > 0 && (
+            <div class="lg:hidden flex flex-wrap gap-2 mb-2">
+              {event.tags.map((tag) => (
+                <span class="text-[10px] font-bold bg-bg-1 text-fg-1 px-2 py-1 uppercase tracking-widest border border-bg-2">
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )
+        }
+
+        {/* Main Image */}
+        {event.image_url && (
+          <figure class="w-full relative   mb-4  border-fg-0 flex justify-center">
+            <img
+              src={event.image_url}
+              alt={event.title}
+              class="max-w-full max-h-[70vh] object-contain"
+            />
+          </figure>
+        )}
+
+        {/* Description */}
+        <section class="space-y-4 pt-4 lg:pt-0">
+          <h2
+            class="text-2xl font-bold uppercase tracking-tighter text-fg-0 border-b-2 border-fg-0 pb-2"
+          >
+            About
+          </h2>
+          <div
+            class="prose-content text-fg-1 font-sans text-lg md:text-xl leading-relaxed space-y-6 transition-colors duration-300"
+          >
+            {
               event.description?.split("\n").map((paragraph) => {
                 if (!paragraph.trim()) return null;
                 return <p>{paragraph}</p>;
               })
             }
           </div>
+        </section>
 
-           {/* Rounds */}
-           {meta.rounds && meta.rounds.length > 0 && (
-            <section>
-              <h3 class="text-2xl font-bold font-serif text-fg-0 mb-6">Event Structure</h3>
-              <div class="space-y-6">
+        {/* Mobile Registration Details (Moved after About) */}
+        <div class="lg:hidden flex flex-col gap-6 pt-4">
+          {
+            meta.fees && meta.fees.length > 0 && (
+              <div class="flex flex-col gap-3 p-4 border-2 border-bg-2 bg-bg-1">
+                <span class="text-[10px] font-bold uppercase tracking-widest text-fg-1 border-b border-bg-2 pb-2">Registration Fees</span>
+                <div class="flex flex-col space-y-2">
+                  {meta.fees.map((fee) => (
+                    <div class="flex justify-between items-center text-sm font-bold uppercase tracking-tighter text-fg-0">
+                      <span>{fee.label}</span>
+                      <span class="text-primary">{fee.amount}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          }
+        </div>
+
+        {/* Rounds */}
+        {
+          meta.rounds && meta.rounds.length > 0 && (
+            <section class="space-y-6 pt-8">
+              <h2 class="text-2xl font-bold uppercase tracking-tighter text-fg-0 border-b-2 border-fg-0 pb-2">
+                Structure
+              </h2>
+              <div class="grid gap-6">
                 {meta.rounds.map((round) => (
-                  <div class="border border-fg-0/10 bg-bg-2/30 p-6 rounded-sm">
-                    <div class="flex justify-between items-start mb-3">
-                      <h4 class="text-xl font-bold text-fg-0">{round.name}</h4>
-                      <span class={`px-2 py-1 text-xs uppercase font-bold tracking-wider border ${round.format === 'online' ? 'border-blue-500/30 text-blue-500' : 'border-orange-500/30 text-orange-500'} rounded-full`}>
+                  <div class="border-2 border-bg-2 p-6 md:p-8">
+                    <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-4 pb-4 border-b-2 border-bg-2">
+                      <h3 class="text-2xl font-bold uppercase tracking-tight text-fg-0">
+                        {round.name}
+                      </h3>
+                      <span
+                        class={`w-max px-3 py-1 text-[10px] uppercase font-bold tracking-[0.2em] border-2 ${round.format === "online" ? "border-primary text-primary" : "border-fg-0 text-fg-0"}`}
+                      >
                         {round.format}
                       </span>
                     </div>
-                    <p class="text-fg-1 mb-4">{round.desc}</p>
-                    
+                    <p class="text-fg-1 text-lg leading-relaxed mb-6">
+                      {round.desc}
+                    </p>
+
                     {(round.objective || round.criteria || round.outcome) && (
-                      <div class="grid md:grid-cols-3 gap-4 mt-4 pt-4 border-t border-fg-0/10">
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {round.objective && (
-                          <div>
-                            <span class="text-xs font-bold uppercase tracking-widest text-fg-0/60 block mb-1">Objective</span>
+                          <div class="flex flex-col gap-2">
+                            <span class="text-[10px] font-bold uppercase tracking-widest text-fg-0 border-b border-fg-0/10 pb-1">
+                              Objective
+                            </span>
                             <p class="text-sm text-fg-1">{round.objective}</p>
                           </div>
                         )}
                         {round.criteria && (
-                          <div>
-                            <span class="text-xs font-bold uppercase tracking-widest text-fg-0/60 block mb-1">Criteria</span>
+                          <div class="flex flex-col gap-2">
+                            <span class="text-[10px] font-bold uppercase tracking-widest text-fg-0 border-b border-fg-0/10 pb-1">
+                              Criteria
+                            </span>
                             <p class="text-sm text-fg-1">{round.criteria}</p>
                           </div>
                         )}
                         {round.outcome && (
-                          <div>
-                            <span class="text-xs font-bold uppercase tracking-widest text-fg-0/60 block mb-1">Outcome</span>
+                          <div class="flex flex-col gap-2">
+                            <span class="text-[10px] font-bold uppercase tracking-widest text-fg-0 border-b border-fg-0/10 pb-1">
+                              Outcome
+                            </span>
                             <p class="text-sm text-fg-1">{round.outcome}</p>
                           </div>
                         )}
@@ -185,156 +408,106 @@ const currentStatus = event.status || "upcoming";
                 ))}
               </div>
             </section>
-          )}
+          )
+        }
 
-          {/* Prizes */}
-          {meta.prizes && meta.prizes.length > 0 && (
-            <section>
-              <h3 class="text-2xl font-bold font-serif text-fg-0 mb-6">Prizes & Rewards</h3>
-              <div class="grid sm:grid-cols-2 gap-4">
+        {/* Prizes */}
+        {
+          meta.prizes && meta.prizes.length > 0 && (
+            <section class="space-y-6 pt-8">
+              <h2 class="text-2xl font-bold uppercase tracking-tighter text-fg-0 border-b-2 border-fg-0 pb-2">
+                Prizes & Rewards
+              </h2>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {meta.prizes
                   .sort((a, b) => a.priority - b.priority)
                   .map((prize) => {
-                     let iconColor = "text-primary";
-                     let iconBg = "bg-primary/10";
-                     let Icon = (
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
-                        </svg>
-                     );
-
-                     if (prize.position === 1) {
-                        iconColor = "text-yellow-500";
-                        iconBg = "bg-yellow-500/10";
-                        Icon = (
-                           <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                           </svg>
-                        );
-                     } else if (prize.position === 2) {
-                        iconColor = "text-slate-400";
-                        iconBg = "bg-slate-400/10";
-                        Icon = (
-                           <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                           </svg>
-                        );
-                     } else if (prize.position === 3) {
-                        iconColor = "text-orange-700";
-                        iconBg = "bg-orange-700/10";
-                        Icon = (
-                           <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
-                           </svg>
-                        );
-                     }
-
-                     return (
-                        <div class="border border-fg-0/10 p-6 rounded-sm flex flex-col items-center text-center bg-gradient-to-br from-bg-2/50 to-bg-0">
-                           <div class={`w-12 h-12 flex items-center justify-center ${iconBg} ${iconColor} rounded-full mb-4`}>
-                              {Icon}
-                           </div>
-                           <h4 class="text-lg font-bold text-fg-0 mb-1">{prize.title}</h4>
-                           <p class={`text-2xl font-bold mb-2 ${iconColor}`}>{prize.reward}</p>
-                           {prize.desc && <p class="text-sm text-fg-1">{prize.desc}</p>}
+                    return (
+                      <div class="border-2 border-bg-2 p-6 md:p-8 flex flex-col justify-between">
+                        <div class="mb-8">
+                          <h4 class="text-sm font-bold uppercase tracking-widest text-fg-1 mb-2">
+                            {prize.title}
+                          </h4>
+                          <p
+                            class={`text-4xl lg:text-5xl font-black uppercase tracking-tighter ${prize.position === 1 ? "text-primary" : "text-fg-0"} leading-none`}
+                          >
+                            {prize.reward}
+                          </p>
                         </div>
-                     );
+                        {prize.desc && (
+                          <p class="text-sm text-fg-1 pt-4 border-t-2 border-bg-2">
+                            {prize.desc}
+                          </p>
+                        )}
+                      </div>
+                    );
                   })}
               </div>
             </section>
-          )}
+          )
+        }
 
-           {/* Collaborators */}
-           {meta.collaborators && meta.collaborators.length > 0 && (
-            <section>
-              <h3 class="text-xl font-bold font-serif text-fg-0 mb-6">In Collaboration With</h3>
-              <div class="flex flex-wrap gap-8 items-center">
+        {/* Collaborators */}
+        {
+          meta.collaborators && meta.collaborators.length > 0 && (
+            <section class="space-y-6 pt-8">
+              <h2 class="text-2xl font-bold uppercase tracking-tighter text-fg-0 border-b-2 border-fg-0 pb-2">
+                In Collaboration With
+              </h2>
+              <div class="flex flex-wrap gap-12 items-center">
                 {meta.collaborators.map((collab) => (
-                  <div class="flex items-center gap-4 opacity-80 hover:opacity-100 transition-opacity">
+                  <div class="flex items-center gap-4">
                     {collab.img && (
-                      <img src={collab.img} alt={collab.name} class="h-12 w-auto object-contain grayscale hover:grayscale-0 transition-all" />
+                      <img
+                        src={collab.img}
+                        alt={collab.name}
+                        class="h-16 w-auto object-contain"
+                      />
                     )}
-                    {!collab.img && <span class="font-bold text-fg-0">{collab.name}</span>}
+                    {!collab.img && (
+                      <span class="font-bold uppercase tracking-widest text-fg-0">
+                        {collab.name}
+                      </span>
+                    )}
                   </div>
                 ))}
               </div>
             </section>
-          )}
+          )
+        }
+
+        {/* Contacts (Mobile Only - moved to bottom) */}
+        <div class="lg:hidden flex flex-col gap-6 pt-8 mt-8 border-t-4 border-fg-0">
+          {
+            meta.contacts && meta.contacts.length > 0 && (
+              <div class="flex flex-col gap-3 pt-4 border-t-2 border-fg-0/10">
+                <span class="text-[10px] font-bold uppercase tracking-widest text-fg-1 mb-1 border-b-2 border-bg-2 pb-2">Contact Details</span>
+                {meta.contacts.map((contact) => (
+                  <div class="flex flex-col mt-2">
+                    <span class="font-bold uppercase tracking-tighter text-fg-0 text-sm">{contact.name}</span>
+                    {contact.role && <span class="text-[9px] font-bold uppercase tracking-widest text-fg-1">{contact.role}</span>}
+                    <div class="flex flex-wrap gap-4 mt-1">
+                      {contact.phone && <a href={`tel:${contact.phone}`} class="text-xs font-mono text-primary hover:underline py-1 w-max">{contact.phone}</a>}
+                      {contact.email && <a href={`mailto:${contact.email}`} class="text-xs font-mono text-primary hover:underline py-1 w-max">{contact.email}</a>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          }
         </div>
 
-        {/* Sidebar Info */}
-        <div class="lg:col-span-1 h-full">
-           <div class="sticky top-24 space-y-8">
-             {/* Registration / Action Card */}
-             <div class="border border-fg-0/10 bg-bg-2/20 p-6 rounded-sm backdrop-blur-md shadow-sm">
-                {event.status === 'past' && (
-                   <div class="text-center pb-6 mb-6 border-b border-fg-0/10">
-                      <span class="block text-4xl mb-2">🏁</span>
-                      <h3 class="text-xl font-bold text-fg-0 mb-2">Event Ended</h3>
-                      <p class="text-fg-1 text-sm mb-4">This event has concluded.</p>
-                      {event.report_url && (
-                          <a href={event.report_url} class="inline-block px-6 py-2 bg-fg-0 text-bg-0 font-bold rounded-sm hover:opacity-90 transition-opacity">
-                             Read Report
-                          </a>
-                      )}
-                   </div>
-                )}
-
-                <h3 class="text-xl font-bold text-fg-0 mb-4">Registration Details</h3>
-                
-                {meta.fees && meta.fees.length > 0 ? (
-                  <div class="space-y-4 mb-6">
-                    {meta.fees.map(fee => (
-                        <div class="flex flex-col border-l-2 border-primary/20 pl-3">
-                          <span class="text-sm font-medium text-fg-1 uppercase tracking-wider">{fee.label}</span>
-                          <span class=" font-bold text-fg-0">{fee.amount}</span>
-                        </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p class="text-fg-1 text-sm mb-6">No specific registration fees listed.</p>
-                )}
-
-                {event.status !== 'past' && event.link && (
-                  <a
-                    href={event.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="block w-full py-4 text-center font-bold bg-primary text-primary-fg hover:opacity-90 transition-opacity rounded-sm shadow-lg shadow-primary/20"
-                  >
-                    {event.button_text || "Register Now"}
-                  </a>
-                )}
-             </div>
-
-             {/* Contacts */}
-             {meta.contacts && meta.contacts.length > 0 && (
-               <div class="border border-fg-0/10 bg-bg-2/20 p-6 rounded-sm backdrop-blur-md shadow-sm">
-                  <h3 class="font-bold text-fg-0 mb-4 uppercase tracking-wider text-sm border-b border-fg-0/10 pb-2">Contact Info</h3>
-                  <div class="space-y-4">
-                    {meta.contacts.map(contact => (
-                      <div class="flex gap-3">
-                        <div class="mt-1">
-                           <svg class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                           </svg>
-                        </div>
-                        <div>
-                          <p class="font-bold text-fg-0">{contact.name}</p>
-                          {contact.role && <p class="text-xs text-fg-1 mb-1">{contact.role}</p>}
-                          {contact.phone && <a href={`tel:${contact.phone}`} class="block text-sm text-fg-1 font-mono hover:text-primary transition-colors">{contact.phone}</a>}
-                          {contact.email && <a href={`mailto:${contact.email}`} class="block text-sm text-fg-1 font-mono hover:text-primary transition-colors">{contact.email}</a>}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-               </div>
-             )}
-           </div>
-        </div>
+        {/* End of Main Content Area */}
       </div>
-      
-      {event.custom_html && <div class="mt-12" set:html={event.custom_html} />}
     </div>
-  </article>
+
+    {
+      event.custom_html && (
+        <div
+          class="mt-24 border-t-4 border-fg-0 pt-16"
+          set:html={event.custom_html}
+        />
+      )
+    }
+  </div>
 </Layout>
