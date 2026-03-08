@@ -196,7 +196,7 @@ export interface Link {
 export interface ShortUrl {
   slug: string;
   destination_url: string;
-  type: "iframe" | "redirect" | "embed" | "gform";
+  type: "iframe" | "redirect" | "embed" | "gform" | "resource-page";
   metadata?: Record<string, any>;
 }
 

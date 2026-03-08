@@ -3,6 +3,8 @@
 import Layout from "../layouts/Layout.astro";
 import IframeLayout from "../layouts/IframeLayout.astro";
 import { dataService } from "../lib/data-service";
+import ResourcesComponent from "../components/Resources.astro";
+import type { Resource } from "../types";
 
 const { slug } = Astro.params;
 const safeSlug = slug || "";
@@ -23,6 +25,46 @@ if (!route || !initialData) {
 // Logic switch based on route type
 if (route.type === "redirect") {
   return Astro.redirect(route.destination_url, 307);
+}
+
+// Prepare dynamic resource page data if needed
+let sortedTypes: string[] = [];
+let groupedResources: Record<string, Resource[]> = {};
+
+if (route.type === "resource-page") {
+  const allowedTypes = (route.metadata?.types as string[]) || [];
+  const excludedTypes = (route.metadata?.excluded_types as string[]) || [];
+  
+  groupedResources = initialData.resources.reduce((acc, resource) => {
+    const type = (resource.resource_type || "Other").toLowerCase();
+    
+    // Filter by allowed types if provided
+    if (allowedTypes.length > 0 && !allowedTypes.map(t => t.toLowerCase()).includes(type)) {
+        return acc;
+    }
+
+    // Filter by excluded types if provided
+    if (excludedTypes.length > 0 && excludedTypes.map(t => t.toLowerCase()).includes(type)) {
+        return acc;
+    }
+
+    const displayType = resource.resource_type || "Other";
+    if (!acc[displayType]) {
+      acc[displayType] = [];
+    }
+    acc[displayType].push(resource);
+    return acc;
+  }, {} as Record<string, Resource[]>);
+
+  const predefinedOrder = ["project", "research", "publication", "resource"];
+  sortedTypes = Object.keys(groupedResources).sort((a, b) => {
+      const idxA = predefinedOrder.indexOf(a.toLowerCase());
+      const idxB = predefinedOrder.indexOf(b.toLowerCase());
+      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+      if (idxA !== -1) return -1;
+      if (idxB !== -1) return 1;
+      return a.localeCompare(b);
+  });
 }
 
 /**
@@ -48,13 +90,33 @@ function getEmbedUrl(url: string, type: string) {
 }
 
 const finalUrl = getEmbedUrl(route.destination_url, route.type);
-const title = route.destination_url || "External Resource";
+const pageTitle = route.type === "resource-page" ? (route.destination_url || "Resources") : (route.destination_url || "External Resource");
 const height = route.metadata?.height || "80vh";
 ---
 
 {
-  route.type === "iframe" ? (
-    <IframeLayout title={title}>
+  route.type === "resource-page" ? (
+    <Layout title={`${pageTitle} | NSDC MEC`} links={initialData.links} injections={initialData.config.injections}>
+        <div class=" bg-bg-0 min-h-screen">
+            {sortedTypes.map((type) => {
+                const displayType = type.toLowerCase() === 'research' ? 'Research' : type.charAt(0).toUpperCase() + type.slice(1) + (type.endsWith('s') ? '' : 's');
+                return (
+                    <ResourcesComponent 
+                        title={displayType} 
+                        resources={groupedResources[type]} 
+                    />
+                )
+            })}
+
+            {sortedTypes.length === 0 && (
+                <div class="container mx-auto px-4 py-12 text-center">
+                    <p class="text-fg-1">No resources found for this category.</p>
+                </div>
+            )}
+        </div>
+    </Layout>
+  ) : route.type === "iframe" ? (
+    <IframeLayout title={pageTitle}>
       <iframe
         src={finalUrl}
         class="w-[100dvw] h-[100dvh] border-none overflow-hidden m-0 p-0"
@@ -62,7 +124,7 @@ const height = route.metadata?.height || "80vh";
     </IframeLayout>
   ) : (
     <Layout
-      title={title}
+      title={pageTitle}
       links={initialData.links}
       injections={initialData.config.injections}
     >
@@ -75,7 +137,7 @@ const height = route.metadata?.height || "80vh";
             <iframe
               src={finalUrl}
               class="w-full h-full border-none"
-              title={title}
+              title={pageTitle}
             >
               Loading...
             </iframe>
@@ -85,3 +147,4 @@ const height = route.metadata?.height || "80vh";
     </Layout>
   )
 }
+
