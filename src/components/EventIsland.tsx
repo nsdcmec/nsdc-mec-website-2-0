@@ -513,7 +513,7 @@ export default function EventsIsland(props: Props) {
                                         </h3>
 
                                         <Show when={event.description}>
-                                          <p class="text-sm xl:text-base text-fg-1 font-sans leading-relaxed mb-8 line-clamp-4 italic opacity-80">
+                                          <p class="text-sm xl:text-base text-fg-1 font-sans leading-relaxed mb-8 line-clamp-4 opacity-80">
                                             {event.description}
                                           </p>
                                         </Show>

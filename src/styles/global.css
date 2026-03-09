@@ -11,9 +11,28 @@
 @import "@fontsource/crimson-pro/600.css";
 @import "@fontsource/crimson-pro/700.css";
 
+@import '@fontsource/inter/100.css';
+@import '@fontsource/inter/200.css';
+@import '@fontsource/inter/300.css';
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/inter/700.css';
+
+@import '@fontsource/archivo/100.css';
+@import '@fontsource/archivo/200.css';
+@import '@fontsource/archivo/300.css';
+@import '@fontsource/archivo/400.css';
+@import '@fontsource/archivo/500.css';
+@import '@fontsource/archivo/600.css';
+@import '@fontsource/archivo/700.css';
+@import '@fontsource/archivo/800.css';
+@import '@fontsource/archivo/900.css';
+
 @theme {
-  --font-sans: "Quicksand", sans-serif;
-  --font-serif: "Lora", serif;
+  --font-sans: "Inter", sans-serif;
+  --font-serif: "quicksand", serif;
+  --font-footertext: "archivo", times;
 
   --color-bg-0: var(--bg-0);
   --color-bg-1: var(--bg-1);
@@ -64,9 +83,20 @@
   }
 }
 
+::selection {
+  background: var(--fg-0);
+  color: var(--bg-0);
+}
+
+::-moz-selection {
+  background: var(--fg-0);
+  color: var(--bg-0);
+}
+
 html {
   scroll-behavior: smooth;
 }
+
 html:active-view-transition {
   scroll-behavior: auto;
 }

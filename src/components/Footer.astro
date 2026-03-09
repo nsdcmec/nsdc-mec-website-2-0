@@ -26,26 +26,30 @@ const groupedLinks = Object.entries(groups).map(([title, items]) => ({
 ---
 
 <footer
-  class="bg-bg-1 overflow-hidden w-full transition-colors duration-300 border-t border-bg-2"
+  class="bg-gradient-to-br from-bg-1/70 to-bg-0 overflow-hidden w-full transition-colors duration-300 border-t border-bg-2"
 >
   <div class="py-12 flex flex-row justify-between gap-4 px-4 w-full">
+
+    <!--EMPTY DIV TO MANAGE SPACING -->
     <div class="flex-shrink-0">
-      <img
+      <!--<img
         src="/logo.png"
         alt="NSDC MEC Logo"
         width="100"
         height="100"
         class="h-24 w-auto"
-      />
+      /> -->
     </div>
-    <div class="flex flex-wrap justify-end gap-x-4 gap-y-12">
+
+    <!--CONNECT & RESOURCES COLUMN -->
+    <div class="flex flex-wrap justify-end gap-x-10 gap-y-12">
       {
         groupedLinks.map((column) => (
-          <div class="flex flex-col space-y-4 items-end w-max">
+          <div class="flex flex-col space-y-3 items-end w-max">
             <h3 class="font-semibold font-sans tracking-wider uppercase text-sm text-fg-0 text-right">
               {column.title}
             </h3>
-            <div class="flex flex-col space-y-3 w-full items-end">
+            <div class="flex flex-col space-y-2 w-full items-end">
               {column.links.map((link) => (
                 <a
                   href={link.url}
@@ -65,21 +69,37 @@ const groupedLinks = Object.entries(groups).map(([title, items]) => ({
     </div>
   </div>
 
-  <div class="relative h-48 w-full">
+  <div class="relative h-1 w-full">
     <div
-      class="absolute bottom-4 left-4 md:left-8 md:bottom-8 flex flex-col space-y-4 items-center md:justify-center"
+      class="absolute bottom-4 left-4 md:left-8 md:bottom-8 flex flex-col space-y-4 items-left md:justify-center"
     >
+      <!--LOGO -->
+      <div class="flex-shrink-0">
+        <img
+          src="/logo.png"
+          alt="NSDC MEC Logo"
+          width="100"
+          height="100"
+          class="h-24 w-auto"
+        />
+      </div>
+
+      <!--THEME TOGGLER-->
       <ThemeToggle />
+
+      <!--COPYRIGHT-->
       <div class="text-sm text-fg-1 font-sans">
         &copy; {new Date().getFullYear()} NSDC MEC
       </div>
     </div>
+
+    <!--FOOTER TEXT [DISABLED] -->
     <div
       aria-hidden="true"
-      class="absolute bottom-0 right-0 translate-x-10 lg:translate-x-30 md:translate-x-25 md:translate-y-1/6 scale-y-140 scale-x-80 select-none pointer-events-none"
+      class="hidden absolute bottom-10 right-0 translate-x-10 lg:translate-x-30 md:translate-x-25 md:translate-y-1/6 scale-y-140 scale-x-80 select-none pointer-events-none"
     >
       <p
-        class="text-right text-[28vw] md:text-[12rem] lg:text-[16rem] flex-col-reverse md:flex-row flex leading-none font-extrabold tracking-tighter text-fg-0/10 whitespace-nowrap font-sans"
+        class="text-right text-[28vw] md:text-[12rem] lg:text-[19rem] flex-col-reverse md:flex-row flex leading-none font-bold tracking-thin text-fg-0/3 whitespace-nowrap font-footertext"
       >
         <span>NSDC</span><span>MEC</span>
       </p>
