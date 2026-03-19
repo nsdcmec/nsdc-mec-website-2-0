@@ -11,7 +11,7 @@ const { links } = Astro.props;
 // Group links by their 'group' property
 const groups: Record<string, Link[]> = {};
 links.forEach((link) => {
-  if (link.position === 'footer') {
+  if (link.position === "footer") {
     const group = link.group || "Other";
     if (!groups[group]) groups[group] = [];
     groups[group].push(link);
@@ -19,17 +19,18 @@ links.forEach((link) => {
 });
 
 // Convert to array for iteration
-const groupedLinks = Object.entries(groups).map(([title, items]) => ({
-  title,
-  links: items.sort((a, b) => a.priority - b.priority)
-})).sort((a, b) => b.links.length - a.links.length); // Sort columns by size
+const groupedLinks = Object.entries(groups)
+  .map(([title, items]) => ({
+    title,
+    links: items.sort((a, b) => a.priority - b.priority),
+  }))
+  .sort((a, b) => b.links.length - a.links.length); // Sort columns by size
 ---
 
 <footer
   class="bg-gradient-to-br from-bg-1/70 to-bg-0 overflow-hidden w-full transition-colors duration-300 border-t border-bg-2"
 >
   <div class="py-12 flex flex-row justify-between gap-4 px-4 w-full">
-
     <!--EMPTY DIV TO MANAGE SPACING -->
     <div class="flex-shrink-0">
       <!--<img
@@ -91,18 +92,6 @@ const groupedLinks = Object.entries(groups).map(([title, items]) => ({
       <div class="text-sm text-fg-1 font-sans">
         &copy; {new Date().getFullYear()} NSDC MEC
       </div>
-    </div>
-
-    <!--FOOTER TEXT [DISABLED] -->
-    <div
-      aria-hidden="true"
-      class="hidden absolute bottom-10 right-0 translate-x-10 lg:translate-x-30 md:translate-x-25 md:translate-y-1/6 scale-y-140 scale-x-80 select-none pointer-events-none"
-    >
-      <p
-        class="text-right text-[28vw] md:text-[12rem] lg:text-[19rem] flex-col-reverse md:flex-row flex leading-none font-bold tracking-thin text-fg-0/3 whitespace-nowrap font-footertext"
-      >
-        <span>NSDC</span><span>MEC</span>
-      </p>
     </div>
   </div>
 </footer>

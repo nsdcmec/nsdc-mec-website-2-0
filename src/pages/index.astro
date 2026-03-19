@@ -7,7 +7,6 @@ import Hero from "../components/Hero.astro";
 import About from "../components/About.astro";
 import EventIsland from "../components/EventIsland";
 import TeamCarousel from "../components/TeamCarousel";
-import TeamPreview from "../components/TeamPreview.astro";
 
 const data = await dataService.getInitialData();
 if (!data) {
@@ -29,7 +28,12 @@ const potentialHeroEvents = data.events.filter((e) => {
 });
 ---
 
-<Layout title="NSDC MEC" links={data.links} injections={data.config.injections}>
+<Layout
+  title="NSDC MEC"
+  links={data.links}
+  injections={data.config.injections}
+  colors={data.config.colors}
+>
   <Hero
     config={data.config.hero}
     main={data.config.heroMain}
@@ -43,7 +47,7 @@ const potentialHeroEvents = data.events.filter((e) => {
       />
     )
   }
-  <About content={data.config.about} />
+  <About content={data.config.about} siteData={data} />
 
   <EventIsland events={data.events} isMinimal={true} client:load />
 

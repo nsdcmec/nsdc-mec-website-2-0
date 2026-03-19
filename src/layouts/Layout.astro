@@ -3,22 +3,28 @@ import { ClientRouter } from "astro:transitions";
 import "../styles/global.css";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
-import type { Link, GlobalInjections, TopHtmlConfig, SlotConfig } from "../types";
+import type {
+  Link,
+  GlobalInjections,
+  TopHtmlConfig,
+  ThemeColors,
+} from "../types";
 
 interface Props {
   title: string;
   links: Link[];
   injections?: GlobalInjections;
+  colors: ThemeColors | undefined;
 }
 
-const { title, links, injections } = Astro.props;
+const { title, links, injections, colors } = Astro.props;
 
 const topHtmlRaw = injections?.top_html;
 let topHtmlConfig: TopHtmlConfig | null = null;
 
 if (topHtmlRaw) {
-  if (typeof topHtmlRaw === 'string') {
-    topHtmlConfig = { html: topHtmlRaw, is_active: true, close_button: true };
+  if (typeof topHtmlRaw === "string") {
+    topHtmlConfig = { html: topHtmlRaw, is_active: true, should_close: true };
   } else {
     topHtmlConfig = topHtmlRaw;
   }
@@ -27,8 +33,49 @@ if (topHtmlRaw) {
 const showTopHtml = topHtmlConfig?.is_active && topHtmlConfig?.html;
 
 const footerSlotRaw = injections?.footer_slot;
-const showFooterSlot = typeof footerSlotRaw === 'string' ? !!footerSlotRaw : (footerSlotRaw?.is_active && footerSlotRaw?.html);
-const footerSlotHtml = typeof footerSlotRaw === 'string' ? footerSlotRaw : footerSlotRaw?.html;
+const showFooterSlot =
+  typeof footerSlotRaw === "string"
+    ? !!footerSlotRaw
+    : footerSlotRaw?.is_active && footerSlotRaw?.html;
+const footerSlotHtml =
+  typeof footerSlotRaw === "string" ? footerSlotRaw : footerSlotRaw?.html;
+
+const generateThemeStyles = (colors?: ThemeColors) => {
+  if (!colors) return "";
+  let css = "";
+
+  if (colors.light) {
+    css += `:root {\n`;
+    if (colors.light.bg0) css += `--bg-0: ${colors.light.bg0};\n`;
+    if (colors.light.bg1) css += `--bg-1: ${colors.light.bg1};\n`;
+    if (colors.light.bg2) css += `--bg-2: ${colors.light.bg2};\n`;
+    if (colors.light.fg0) css += `--fg-0: ${colors.light.fg0};\n`;
+    if (colors.light.fg1) css += `--fg-1: ${colors.light.fg1};\n`;
+    if (colors.light.primary) css += `--primary: ${colors.light.primary};\n`;
+    if (colors.light.primaryFg)
+      css += `--primary-fg: ${colors.light.primaryFg};\n`;
+    css += `}\n`;
+  }
+
+  if (colors.dark) {
+    let darkRules = "";
+    if (colors.dark.bg0) darkRules += `--bg-0: ${colors.dark.bg0};\n`;
+    if (colors.dark.bg1) darkRules += `--bg-1: ${colors.dark.bg1};\n`;
+    if (colors.dark.bg2) darkRules += `--bg-2: ${colors.dark.bg2};\n`;
+    if (colors.dark.fg0) darkRules += `--fg-0: ${colors.dark.fg0};\n`;
+    if (colors.dark.fg1) darkRules += `--fg-1: ${colors.dark.fg1};\n`;
+    if (colors.dark.primary)
+      darkRules += `--primary: ${colors.dark.primary};\n`;
+    if (colors.dark.primaryFg)
+      darkRules += `--primary-fg: ${colors.dark.primaryFg};\n`;
+
+    css += `:root.dark {\n${darkRules}}\n`;
+    css += `@media (prefers-color-scheme: dark) {\n  :root:not(.light) {\n${darkRules}  }\n}\n`;
+  }
+
+  return css;
+};
+const themeCss = generateThemeStyles(colors);
 ---
 
 <!doctype html>
@@ -42,6 +89,7 @@ const footerSlotHtml = typeof footerSlotRaw === 'string' ? footerSlotRaw : foote
     <title>{title}</title>
 
     <ClientRouter />
+    {themeCss && <style is:inline set:html={themeCss} />}
     <script is:inline>
       const getTheme = () => {
         if (
@@ -68,23 +116,36 @@ const footerSlotHtml = typeof footerSlotRaw === 'string' ? footerSlotRaw : foote
     </script>
   </head>
   <body class="antialiased min-h-screen flex flex-col overflow-x-hidden">
-    {showTopHtml && (
-      <div id="top-injection-banner" class="relative w-full z-[60]">
-        <div set:html={topHtmlConfig.html} />
-        {topHtmlConfig.should_close && (
-          <button
-            aria-label="Close Announcement"
-            onclick="document.getElementById('top-injection-banner').remove()"
-            class="absolute top-2 right-2 p-1 bg-black/10 hover:bg-black/20 text-current rounded-full transition-colors cursor-pointer z-50"
-          >
-             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        )}
-      </div>
-    )}
-    
+    {
+      showTopHtml && topHtmlConfig && (
+        <div id="top-injection-banner" class="relative w-full z-[60]">
+          <div set:html={topHtmlConfig.html} />
+          {topHtmlConfig.should_close && (
+            <button
+              aria-label="Close Announcement"
+              onclick="document.getElementById('top-injection-banner').remove()"
+              class="absolute top-2 right-2 p-1 bg-black/10 hover:bg-black/20 text-current rounded-full transition-colors cursor-pointer z-50"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          )}
+        </div>
+      )
+    }
+
     <div transition:persist="header" class="sticky top-0 z-50 w-full">
       <Header links={links} />
     </div>

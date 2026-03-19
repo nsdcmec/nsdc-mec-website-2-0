@@ -1,35 +1,302 @@
 ---
-import type { AboutConfig } from "../types";
+import type { AboutConfig, SiteData } from "../types";
 
 interface Props {
   content: AboutConfig;
+  siteData?: SiteData;
 }
 
-const { content } = Astro.props;
+const { content, siteData } = Astro.props;
+
+// 1. Members Calculation
+const currentTeam =
+  siteData?.teams && siteData.teams.length > 0 ? siteData.teams[0] : null;
+const coreMembersCount = currentTeam?.members?.length || 0;
+const teamImages =
+  currentTeam?.members
+    ?.slice(0, 4)
+    .map((m) => m.image_url)
+    .filter(Boolean) || [];
+
+// Calculate Lifetime Members (Distinct Names across all years)
+const allTeamMembers = siteData?.teams?.flatMap((t) => t.members) || [];
+const uniqueMemberNames = new Set(
+  allTeamMembers.map((m) => m.name.toLowerCase().trim()),
+);
+const lifetimeMembersCount = uniqueMemberNames.size;
+
+// 2. Events & Recent Info
+const allEvents = siteData?.events || [];
+const conductedEvents = allEvents.filter(
+  (e) => e.status === "past" || e.status === "recent",
+);
+const eventsCount = conductedEvents.length;
+
+// 3. Publications
+const researchProjectCount = siteData?.resources
+  ? siteData.resources.filter(
+      (r) =>
+        r.resource_type?.toLowerCase() === "research" ||
+        r.resource_type?.toLowerCase() === "project" ||
+        r.resource_type?.toLowerCase() === "publication",
+    ).length
+  : 0;
+
+// 4. Config Data
+const establishedYear = content.established_year;
+const yearsActive = establishedYear
+  ? new Date().getFullYear() - establishedYear
+  : 0;
+
+// Strip any existing '+' signs from the DB string so we don't end up with "1500++"
+const cleanParticipantsCount =
+  content.total_participants?.replace(/\++$/, "") || "0";
+
+const title = content.title;
+const subtitle = content.subtitle;
 ---
 
-<section id="about" class="bg-bg-0 mt-16 md:mt-24">
-  <div class="px-4 md:min-h-[75vh] flex flex-col">
-    <div class="grid md:grid-cols-12 gap-12 md:gapy-y-0 flex-grow items-start">
-      <div class="md:col-span-2 md:h-full z-10 sticky md:top-0">
+<section id="about" class="bg-bg-0 py-16 border-t border-bg-2">
+  <div class="container mx-auto px-2">
+    <div class="flex flex-col gap-4">
+      {/* Header Section */}
+      <div>
         <h2
-          class="font-bold font-sans tracking-wide text-fg-0
-            text-2xl py-2 bg-bg-0/75 backdrop-blur-sm w-full border-b md:border-none border-bg-2/50
-            md:text-4xl md:bg-transparent md:sticky md:top-24 md:py-0"
+          class="text-5xl font-black font-sans text-fg-0 leading-[1.1] uppercase tracking-tighter"
         >
-          {content.title || "About Us"}
+          {title}
         </h2>
+        {
+          subtitle && (
+            <p class="text-lg md:text-xl text-fg-1 mt-4 font-medium leading-relaxed">
+              {subtitle}
+            </p>
+          )
+        }
       </div>
 
-      <div
-        class="md:col-span-10 h-full flex flex-col justify-center pt-4 md:pt-0 pb-16 md:pb-24"
-      >
-        <div
-          class="flex flex-col justify-center h-max italic text-fg-0 leading-relaxed
-                 text-base space-y-6
-                 md:text-2xl md:space-y-10"
-        >
-          <p>{content.desc}</p>
+      {/* Main Layout: 3 Columns on Desktop */}
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8 items-start">
+        {/* COLUMN 1: Description & Stats */}
+        <div class="lg:col-span-4 flex flex-col gap-8">
+          {
+            content.desc_main && (
+              <div class="text-base text-fg-1 leading-relaxed">
+                <p>{content.desc_main}</p>
+              </div>
+            )
+          }
+
+          {/* Unified Stats Block */}
+          <div class="border border-bg-2 bg-bg-1 flex flex-col">
+            {/* Years Active - Full Width Header */}
+            {
+              establishedYear && (
+                <div class="p-6 border-b border-bg-2 flex items-center justify-between">
+                  <div class="flex flex-col">
+                    <span class="text-4xl font-black font-sans text-fg-0 tracking-tighter leading-none mb-1">
+                      {yearsActive}+
+                    </span>
+                    <span class="text-xs font-bold uppercase tracking-widest text-fg-1">
+                      Years Active
+                    </span>
+                  </div>
+                </div>
+              )
+            }
+
+            {/* Mobile: 3-Col Row | Desktop: Stacked Column */}
+            <div class="grid grid-cols-3 lg:grid-cols-1">
+              <div
+                class="p-4 lg:p-6 border-r lg:border-r-0 lg:border-b border-bg-2 flex flex-col justify-center"
+              >
+                <span
+                  class="text-2xl lg:text-4xl font-black font-sans text-fg-0 tracking-tighter leading-none mb-1"
+                >
+                  {eventsCount}
+                </span>
+                <span
+                  class="text-xs font-bold uppercase tracking-widest text-fg-1 break-words"
+                >
+                  Events
+                </span>
+              </div>
+
+              <div
+                class="p-4 lg:p-6 border-r lg:border-r-0 lg:border-b border-bg-2 flex flex-col justify-center"
+              >
+                <span
+                  class="text-2xl lg:text-4xl font-black font-sans text-fg-0 tracking-tighter leading-none mb-1"
+                >
+                  {researchProjectCount}
+                </span>
+                <span
+                  class="text-xs font-bold uppercase tracking-widest text-fg-1 break-words"
+                >
+                  Publications
+                </span>
+              </div>
+
+              <div class="p-4 lg:p-6 flex flex-col justify-center">
+                <span
+                  class="text-2xl lg:text-4xl font-black font-sans text-fg-0 tracking-tighter leading-none mb-1"
+                >
+                  {cleanParticipantsCount}+
+                </span>
+                <span
+                  class="text-xs font-bold uppercase tracking-widest text-fg-1 break-words"
+                >
+                  Reached
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* COLUMN 2: Testimonials */}
+        <div class="lg:col-span-4 flex flex-col gap-8">
+          {/* Chairperson Testimonial */}
+          {
+            content.chairperson && content.chairperson.quote && (
+              <div class="bg-fg-0 text-bg-0 p-6 lg:p-8 flex flex-col">
+                <span class="text-xs font-bold uppercase tracking-widest opacity-60 mb-6 border-b border-bg-0/20 pb-4">
+                  Chairperson
+                </span>
+                <p class="text-sm md:text-base font-serif italic leading-relaxed mb-8 opacity-90">
+                  "{content.chairperson.quote}"
+                </p>
+                <div class="flex items-center gap-4 mt-auto">
+                  {content.chairperson.photo && (
+                    <img
+                      src={content.chairperson.photo}
+                      alt={content.chairperson.name}
+                      class="w-10 h-10 rounded-full object-cover border border-bg-0/20"
+                    />
+                  )}
+                  <div class="flex flex-col">
+                    <span class="text-xs font-bold uppercase tracking-widest">
+                      {content.chairperson.name}
+                    </span>
+                    <span class="text-xs opacity-60 uppercase tracking-widest mt-1">
+                      {content.chairperson.role || "NSDC MEC"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )
+          }
+
+          {/* External Testimonial (Renders nothing if missing) */}
+          {
+            content.external_testimonial &&
+              content.external_testimonial.quote && (
+                <div class="border border-bg-2 bg-bg-1 p-6 lg:p-8 flex flex-col">
+                  <p class="text-sm text-fg-1 italic leading-relaxed mb-8">
+                    "{content.external_testimonial.quote}"
+                  </p>
+                  <div class="flex items-center gap-4 mt-auto">
+                    {content.external_testimonial.photo && (
+                      <img
+                        src={content.external_testimonial.photo}
+                        alt={content.external_testimonial.name}
+                        class="w-10 h-10 rounded-full object-cover grayscale"
+                      />
+                    )}
+                    <div class="flex flex-col">
+                      <span class="text-xs font-bold text-fg-0 uppercase tracking-widest">
+                        {content.external_testimonial.name}
+                      </span>
+                      <span class="text-xs text-fg-1 uppercase tracking-widest mt-1">
+                        {content.external_testimonial.role ||
+                          content.external_testimonial.organization ||
+                          "Collaborator"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )
+          }
+        </div>
+
+        {/* COLUMN 3: Impact, NBDC & Secondary Insight */}
+        <div class="lg:col-span-4 flex flex-col gap-8">
+          {/* Impact - Core & Lifetime */}
+          {
+            content.impact && (
+              <div class="border border-bg-2 bg-bg-1 p-6 lg:p-8 flex flex-col justify-between">
+                <p class="text-fg-0 text-xs font-bold uppercase tracking-widest leading-relaxed mb-6 border-b border-bg-2 pb-4">
+                  {content.impact.line}
+                </p>
+                <div class="flex items-end justify-between">
+                  <div class="flex flex-col gap-3">
+                    {teamImages.length > 0 && (
+                      <div class="flex -space-x-2 mb-1">
+                        {teamImages.map((img) => (
+                          <img
+                            src={img}
+                            alt=""
+                            class="w-8 h-8 rounded-full border-2 border-bg-1 object-cover bg-bg-2"
+                          />
+                        ))}
+                      </div>
+                    )}
+                    <div class="flex flex-col">
+                      <span class="text-3xl font-black text-fg-0 leading-none mb-1">
+                        {coreMembersCount}
+                      </span>
+                      <span class="text-xs font-bold uppercase tracking-widest text-fg-1">
+                        Core Members
+                      </span>
+                    </div>
+                  </div>
+                  <div class="flex flex-col items-end">
+                    <span class="text-4xl font-black text-primary leading-none tracking-tighter mb-1">
+                      {lifetimeMembersCount}+
+                    </span>
+                    <span class="text-xs font-bold uppercase tracking-widest text-fg-1 text-right">
+                      Lifetime Members
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )
+          }
+
+          {/* NBDC Section */}
+          {
+            content.nbdc && content.nbdc.title && (
+              <div class="border border-bg-2 bg-bg-1 p-6 flex flex-col">
+                <div class="flex items-start gap-4 mb-4">
+                  {content.nbdc.img && (
+                    <div class="w-12 h-12 shrink-0 border border-bg-2 bg-bg-2 flex items-center justify-center p-2">
+                      <img
+                        src={content.nbdc.img}
+                        alt=""
+                        class="w-full h-full object-contain grayscale opacity-60"
+                      />
+                    </div>
+                  )}
+                  <h4 class="text-sm font-bold text-fg-0 uppercase tracking-widest leading-snug pt-1">
+                    {content.nbdc.title}
+                  </h4>
+                </div>
+                <p class="text-sm text-fg-1 leading-relaxed">
+                  {content.nbdc.desc}
+                </p>
+              </div>
+            )
+          }
+
+          {/* Secondary Insight (desc_2) */}
+          {
+            content.desc_2 && (
+              <div class="pt-2">
+                <p class="text-sm text-fg-1 leading-relaxed italic border-l-2 border-bg-2 pl-4">
+                  {content.desc_2}
+                </p>
+              </div>
+            )
+          }
         </div>
       </div>
     </div>

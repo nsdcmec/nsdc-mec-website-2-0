@@ -14,6 +14,7 @@ import type {
   TeamMainConfig,
   GlobalInjections,
   Resource,
+  ThemeColors,
 } from "../types";
 
 /* =========================================
@@ -92,16 +93,23 @@ const loadNeonData = async () => {
   console.log("Loading data from Neon DB...");
 
   try {
-    const [announcements, events, teams, links, shortLinks, resources, configMap] =
-      await Promise.all([
-        fetchAnnouncements(),
-        fetchEvents(),
-        fetchTeams(),
-        fetchLinks(),
-        fetchShortLinks(),
-        fetchResources(),
-        fetchSiteConfig(),
-      ]);
+    const [
+      announcements,
+      events,
+      teams,
+      links,
+      shortLinks,
+      resources,
+      configMap,
+    ] = await Promise.all([
+      fetchAnnouncements(),
+      fetchEvents(),
+      fetchTeams(),
+      fetchLinks(),
+      fetchShortLinks(),
+      fetchResources(),
+      fetchSiteConfig(),
+    ]);
 
     // Parse Configs
     const about = (configMap.get("about") || {
@@ -128,6 +136,8 @@ const loadNeonData = async () => {
     }) as TeamMainConfig;
     const theme = (configMap.get("default-theme") || "system") as string;
 
+    const colors = configMap.get("theme_colors") as ThemeColors | undefined;
+
     // Explicitly cast or parse top_html.
     // It comes from JSONB, so it should be the object already if stored as such.
 
@@ -151,6 +161,7 @@ const loadNeonData = async () => {
         teamMain,
         injections,
         theme,
+        colors,
       },
     };
 
@@ -167,4 +178,3 @@ export const dataService = {
   getInitialData: async () => store.getSiteData(),
   getRoute: async (slug: string) => store.getRoute(slug),
 };
-

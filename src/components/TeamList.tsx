@@ -237,20 +237,7 @@ export default function TeamList(props: TeamListProps) {
                       <div class="flex flex-wrap justify-center -ml-[2px] -mt-[2px]">
                         <For each={group.members}>
                           {(member) => {
-                            const socials =
-                              member.social_links &&
-                              member.social_links.length > 0
-                                ? member.social_links
-                                : [
-                                    {
-                                      name: "LinkedIn",
-                                      url: "https://linkedin.com",
-                                    },
-                                    {
-                                      name: "GitHub",
-                                      url: "https://github.com",
-                                    },
-                                  ];
+                            const socials = member.social_links;
 
                             return (
                               <div class="flex flex-col border border-fg-0/40 p-6 bg-bg-0 rounded-none w-full sm:w-1/2 lg:w-1/3 max-w-[340px] sm:max-w-none -ml-[2px] -mt-[2px] box-border relative z-10">
@@ -285,21 +272,23 @@ export default function TeamList(props: TeamListProps) {
                                     </p>
                                   </Show>
 
-                                  <div class="flex justify-between items-center pt-4 border-t-2 border-fg-0/10 mt-auto">
-                                    <For each={socials.slice(0, 2)}>
-                                      {(link) => (
-                                        <a
-                                          href={link.url}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          class="relative group py-1 text-[10px] font-bold font-mono uppercase tracking-widest text-fg-1 hover:text-fg-0 transition-colors"
-                                        >
-                                          <span>{link.name}</span>
-                                          <span class="absolute bottom-0 right-0 h-[1px] w-full bg-fg-0 transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover:scale-x-100 group-hover:origin-left" />
-                                        </a>
-                                      )}
-                                    </For>
-                                  </div>
+                                  <Show when={socials.length > 0}>
+                                    <div class="flex justify-between items-center pt-4 border-t-2 border-fg-0/10 mt-auto">
+                                      <For each={socials.slice(0, 2)}>
+                                        {(link) => (
+                                          <a
+                                            href={link.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="relative group py-1 text-[10px] font-bold font-mono uppercase tracking-widest text-fg-1 hover:text-fg-0 transition-colors"
+                                          >
+                                            <span>{link.name}</span>
+                                            <span class="absolute bottom-0 right-0 h-[1px] w-full bg-fg-0 transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover:scale-x-100 group-hover:origin-left" />
+                                          </a>
+                                        )}
+                                      </For>
+                                    </div>
+                                  </Show>
                                 </div>
                               </div>
                             );

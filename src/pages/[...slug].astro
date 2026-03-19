@@ -96,7 +96,7 @@ const height = route.metadata?.height || "80vh";
 
 {
   route.type === "resource-page" ? (
-    <Layout title={`${pageTitle} | NSDC MEC`} links={initialData.links} injections={initialData.config.injections}>
+    <Layout title={`${pageTitle} | NSDC MEC`} links={initialData.links} injections={initialData.config.injections} colors={initialData.config.colors}>
         <div class=" bg-bg-0 min-h-screen">
             {sortedTypes.map((type) => {
                 const displayType = type.toLowerCase() === 'research' ? 'Research' : type.charAt(0).toUpperCase() + type.slice(1) + (type.endsWith('s') ? '' : 's');
@@ -127,6 +127,7 @@ const height = route.metadata?.height || "80vh";
       title={pageTitle}
       links={initialData.links}
       injections={initialData.config.injections}
+      colors={initialData.config.colors}
     >
       <section class="w-full flex flex-col items-center justify-center bg-bg-0 min-h-[80vh] py-12">
         <div class="container mx-auto px-4 h-full flex flex-col">

@@ -6,33 +6,17 @@
 @import "@fontsource/quicksand/600.css";
 @import "@fontsource/quicksand/700.css";
 
-@import "@fontsource/crimson-pro/400.css";
-@import "@fontsource/crimson-pro/500.css";
-@import "@fontsource/crimson-pro/600.css";
-@import "@fontsource/crimson-pro/700.css";
-
-@import '@fontsource/inter/100.css';
-@import '@fontsource/inter/200.css';
-@import '@fontsource/inter/300.css';
-@import '@fontsource/inter/400.css';
-@import '@fontsource/inter/500.css';
-@import '@fontsource/inter/600.css';
-@import '@fontsource/inter/700.css';
-
-@import '@fontsource/archivo/100.css';
-@import '@fontsource/archivo/200.css';
-@import '@fontsource/archivo/300.css';
-@import '@fontsource/archivo/400.css';
-@import '@fontsource/archivo/500.css';
-@import '@fontsource/archivo/600.css';
-@import '@fontsource/archivo/700.css';
-@import '@fontsource/archivo/800.css';
-@import '@fontsource/archivo/900.css';
+@import "@fontsource/inter/100.css";
+@import "@fontsource/inter/200.css";
+@import "@fontsource/inter/300.css";
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/inter/700.css";
 
 @theme {
   --font-sans: "Inter", sans-serif;
   --font-serif: "quicksand", serif;
-  --font-footertext: "archivo", times;
 
   --color-bg-0: var(--bg-0);
   --color-bg-1: var(--bg-1);
@@ -57,28 +41,32 @@
   --primary-fg: #ffffff;
 
   &.dark {
-    --bg-0: #0b111d;
-    --bg-1: #162032;
-    --bg-2: #1f2937;
+    /* Deep navy blue matching the bottom of your posters */
+    --bg-0: #050b14;
+    /* Slightly lighter card background */
+    --bg-1: #0a1628;
+    /* Border color for visibility without overwhelming */
+    --bg-2: #1a2c4d;
 
-    --fg-0: #f9fafb;
-    --fg-1: #9ca3af;
+    --fg-0: #f8fafc;
+    --fg-1: #94a3b8;
 
-    --primary: #f9fafb;
-    --primary-fg: #101828;
+    /* Vibrant blue from the 'Win with Ai' text */
+    --primary: #2563eb;
+    --primary-fg: #ffffff;
   }
 
   @media (prefers-color-scheme: dark) {
     &:not(.light) {
-      --bg-0: #0b111d;
-      --bg-1: #162032;
-      --bg-2: #1f2937;
+      --bg-0: #050b14;
+      --bg-1: #0a1628;
+      --bg-2: #1a2c4d;
 
-      --fg-0: #f9fafb;
-      --fg-1: #9ca3af;
+      --fg-0: #f8fafc;
+      --fg-1: #94a3b8;
 
-      --primary: #f9fafb;
-      --primary-fg: #101828;
+      --primary: #2563eb;
+      --primary-fg: #ffffff;
     }
   }
 }

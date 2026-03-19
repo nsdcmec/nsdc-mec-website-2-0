@@ -129,21 +129,32 @@ export interface TeamYear {
   members: TeamMember[];
 }
 
-export interface AboutCardConfig {
-  id: string;
-  type: "stats" | "reviews" | "chairman" | "general";
-  title?: string;
-  content?: string;
-  rowSpan: number;
-  colSpan: number;
-  isActive: boolean;
-  metadata?: Record<string, any>;
+export interface AboutQuote {
+  name: string;
+  role?: string;
+  quote: string;
+  photo?: string;
+  organization?: string;
 }
 
 export interface AboutConfig {
   title: string;
   subtitle?: string;
-  cards: AboutCardConfig[];
+  desc_main?: string;
+  desc_2?: string;
+  established_year?: number;
+  total_participants?: string;
+  nbdc?: {
+    title: string;
+    desc: string;
+    img?: string;
+  };
+  chairperson?: AboutQuote;
+  external_testimonial?: AboutQuote;
+  impact?: {
+    total_members_count?: string;
+    line: string;
+  };
 }
 
 export interface HeroConfig {
@@ -152,8 +163,17 @@ export interface HeroConfig {
   desc: string;
 }
 
+export interface Report {
+  id: string;
+  relation: string;
+  date: string;
+  title: string;
+  desc: string;
+  img: string;
+}
+
 export interface HeroMainConfig {
-  type: "img" | "video" | "iframe";
+  type: "img" | "video" | "iframe" | "animation";
   src: string;
   link: string;
   buttontext: string;
@@ -236,5 +256,21 @@ export interface SiteData {
     teamMain: TeamMainConfig;
     injections: GlobalInjections;
     theme: string;
+    colors?: ThemeColors;
   };
+}
+
+export interface ThemeColorSet {
+  bg0?: string;
+  bg1?: string;
+  bg2?: string;
+  fg0?: string;
+  fg1?: string;
+  primary?: string;
+  primaryFg?: string;
+}
+
+export interface ThemeColors {
+  light?: ThemeColorSet;
+  dark?: ThemeColorSet;
 }
