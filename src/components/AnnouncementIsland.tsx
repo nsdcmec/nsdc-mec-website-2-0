@@ -1,4 +1,4 @@
-import { createSignal, onMount, onCleanup, For } from "solid-js";
+import { createSignal, onMount, onCleanup, For, createEffect } from "solid-js";
 import type { Announcement } from "../types";
 
 interface Props {
@@ -7,8 +7,7 @@ interface Props {
 
 const CONFIG = {
   rotationSpeed: 5000,
-  animDuration: 500,
-  pixelsPerSecond: 30,
+  pixelsPerSecond: 20, // Lower means slower, calmer marquee
 };
 
 export default function AnnouncementRotator(props: Props) {
@@ -19,51 +18,59 @@ export default function AnnouncementRotator(props: Props) {
   const [textOpacity, setTextOpacity] = createSignal(1);
 
   let widgetRef: HTMLDivElement | undefined;
-  let pillRef: HTMLButtonElement | undefined;
   let textDynamicRef: HTMLSpanElement | undefined;
-  let textStaticRef: HTMLSpanElement | undefined;
-  let arrowRef: SVGSVGElement | undefined;
   let intervalId: number | undefined;
 
-  const handleTextScroll = (
-    container: HTMLElement | undefined,
-    textEl: HTMLElement | undefined,
-    shouldScroll: boolean,
-  ) => {
-    if (!textEl || !container) return;
+  // Calculates if text overflows its container, and applies a calm "yoyo" CSS animation
+  const applyMarquee = (el: HTMLElement | undefined) => {
+    if (!el) return;
+    const parent = el.parentElement;
+    if (!parent) return;
 
-    if (shouldScroll) {
-      const mask = textEl.parentElement;
-      if (!mask) return;
-      const maskWidth = mask.clientWidth;
-      const textWidth = textEl.scrollWidth;
+    // Reset animation to calculate true natural width
+    el.style.animation = "none";
+    el.style.transform = "translateX(0)";
 
-      if (textWidth > maskWidth) {
-        const distanceToMove = textWidth - maskWidth + 20;
-        const duration = distanceToMove / CONFIG.pixelsPerSecond;
-        textEl.style.transition = `transform ${Math.max(duration, 0.5)}s linear`;
-        textEl.style.transform = `translateX(-${distanceToMove}px)`;
+    requestAnimationFrame(() => {
+      const scrollWidth = el.scrollWidth;
+      const clientWidth = parent.clientWidth;
+
+      if (scrollWidth > clientWidth) {
+        const dist = scrollWidth - clientWidth + 16; // Small padding buffer
+        el.style.setProperty("--scroll-dist", `-${dist}px`);
+
+        const duration = Math.max(dist / CONFIG.pixelsPerSecond, 3);
+        // Uses ease-in-out for a very gentle deceleration at edges
+        el.style.animation = `yoyo-scroll ${duration}s ease-in-out infinite alternate`;
       }
-    } else {
-      textEl.style.transition = "transform 0.3s ease-out";
-      textEl.style.transform = "translateX(0)";
-    }
+    });
   };
+
+  // Re-evaluate the dynamic text's scroll when it changes
+  createEffect(() => {
+    currentIndex();
+    if (textDynamicRef && !expanded()) {
+      setTimeout(() => applyMarquee(textDynamicRef), 50);
+    }
+  });
+
+  // Re-evaluate the dropdown items' scroll when the menu expands
+  createEffect(() => {
+    if (expanded()) {
+      setTimeout(() => {
+        const els = widgetRef?.querySelectorAll(".dropdown-scroll-text");
+        els?.forEach((el) => applyMarquee(el as HTMLElement));
+      }, 350); // wait for CSS grid transition to reveal elements
+    }
+  });
 
   const updateText = () => {
     setTextOpacity(0);
     setTimeout(() => {
       setCurrentIndex((prev) => (prev + 1) % props.announcements.length);
-      if (textDynamicRef) {
-        textDynamicRef.style.transition = "none";
-        textDynamicRef.style.transform = "translateX(0)";
-        setTimeout(() => {
-          if (textDynamicRef) {
-            textDynamicRef.style.transition = "opacity 0.5s ease-out";
-          }
-          setTextOpacity(1);
-        }, 50);
-      }
+      setTimeout(() => {
+        setTextOpacity(1);
+      }, 50);
     }, 300);
   };
 
@@ -92,6 +99,17 @@ export default function AnnouncementRotator(props: Props) {
   onMount(() => {
     startTimer();
 
+    // Use ResizeObserver to reliably adjust marquee if user resizes window
+    const ro = new ResizeObserver(() => {
+      if (textDynamicRef && !expanded()) applyMarquee(textDynamicRef);
+      if (expanded() && widgetRef) {
+        widgetRef
+          .querySelectorAll(".dropdown-scroll-text")
+          .forEach((el) => applyMarquee(el as HTMLElement));
+      }
+    });
+    if (widgetRef) ro.observe(widgetRef);
+
     const handleClickOutside = (e: MouseEvent) => {
       if (
         expanded() &&
@@ -105,6 +123,7 @@ export default function AnnouncementRotator(props: Props) {
 
     document.addEventListener("click", handleClickOutside);
     onCleanup(() => {
+      ro.disconnect();
       if (intervalId) clearInterval(intervalId);
       document.removeEventListener("click", handleClickOutside);
     });
@@ -115,7 +134,7 @@ export default function AnnouncementRotator(props: Props) {
       <div class="w-full max-w-full mb-6 md:mb-8 relative z-30">
         <div
           ref={widgetRef}
-          class="relative flex flex-col items-start"
+          class="relative flex flex-col w-full max-w-sm"
           onMouseEnter={() => {
             if (window.matchMedia("(min-width: 768px)").matches)
               toggleExpanded(true);
@@ -125,25 +144,19 @@ export default function AnnouncementRotator(props: Props) {
               toggleExpanded(false);
           }}
         >
+          {/* MAIN PILL */}
           <button
-            ref={pillRef}
-            class="relative z-20 inline-flex items-center justify-between pl-4 pr-10 py-2 rounded-full border border-bg-2 bg-bg-1 shadow-sm cursor-pointer text-left group transition-all duration-300 animate-glow max-w-full overflow-hidden"
+            class="relative z-20 w-full inline-flex items-center justify-between pl-4 pr-10 py-2 rounded-full border border-bg-2 bg-bg-1  cursor-pointer text-left group transition-all duration-300 animate-glow overflow-hidden"
             onClick={() => {
               if (window.matchMedia("(max-width: 767px)").matches)
                 toggleExpanded(!expanded());
             }}
-            onMouseEnter={() => {
-              if (!expanded()) handleTextScroll(pillRef, textDynamicRef, true);
-            }}
-            onMouseLeave={() => {
-              handleTextScroll(pillRef, textDynamicRef, false);
-            }}
           >
-            <div class="relative rounded-full px-2 overflow-hidden w-full mr-2">
+            <div class="relative px-2 overflow-hidden flex-1 min-w-0 mr-2">
               <div class="grid grid-cols-1 grid-rows-1 items-center">
                 <span
                   ref={textDynamicRef}
-                  class="scrolling-text col-start-1 row-start-1 block whitespace-nowrap text-xs md:text-sm font-medium font-sans text-fg-0 transition-opacity duration-500 ease-out"
+                  class="col-start-1 row-start-1 block whitespace-nowrap text-sm  font-medium font-sans text-fg-0 transition-opacity duration-500 ease-out"
                   style={{
                     opacity: textOpacity(),
                     visibility: expanded() ? "hidden" : "visible",
@@ -153,7 +166,6 @@ export default function AnnouncementRotator(props: Props) {
                 </span>
 
                 <span
-                  ref={textStaticRef}
                   class="col-start-1 row-start-1 block whitespace-nowrap text-xs md:text-sm font-bold font-sans text-primary transition-opacity duration-300 ease-out pointer-events-none"
                   style={{ visibility: expanded() ? "visible" : "hidden" }}
                   aria-hidden="true"
@@ -163,9 +175,8 @@ export default function AnnouncementRotator(props: Props) {
               </div>
             </div>
 
-            <div class="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-bg-0/10 backdrop-blur-sm   text-fg-0 z-20">
+            <div class="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-bg-0/10 backdrop-blur-sm text-fg-0 z-20">
               <svg
-                ref={arrowRef}
                 class="w-4 h-4 transition-transform duration-300"
                 style={{
                   transform: expanded() ? "rotate(90deg)" : "rotate(0deg)",
@@ -184,46 +195,26 @@ export default function AnnouncementRotator(props: Props) {
             </div>
           </button>
 
+          {/* DROPDOWN ITEMS */}
           <div
             class="grid transition-[grid-template-rows] duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)] w-full"
             style={{ "grid-template-rows": expanded() ? "1fr" : "0fr" }}
           >
-            <div class="overflow-hidden">
+            <div class="overflow-hidden w-full">
+              {/* Changed flex layout to stretch its children to 100% full width */}
               <div
-                class="pt-3 flex flex-col gap-2 items-start pl-4 transition-opacity duration-300 delay-75 w-full max-w-md"
+                class="pt-3 flex flex-col gap-2 items-stretch transition-opacity duration-300 delay-75 w-full"
                 style={{ opacity: expanded() ? 1 : 0 }}
-                onMouseOver={(e) => {
-                  const link = (e.target as HTMLElement).closest(
-                    ".group\\/item",
-                  );
-                  if (link) {
-                    const span = link.querySelector(
-                      ".scrolling-text",
-                    ) as HTMLElement;
-                    handleTextScroll(link as HTMLElement, span, true);
-                  }
-                }}
-                onMouseOut={(e) => {
-                  const link = (e.target as HTMLElement).closest(
-                    ".group\\/item",
-                  );
-                  if (link) {
-                    const span = link.querySelector(
-                      ".scrolling-text",
-                    ) as HTMLElement;
-                    handleTextScroll(link as HTMLElement, span, false);
-                  }
-                }}
               >
                 <For each={props.announcements}>
                   {(item) => (
                     <a
                       href={item.link || "#"}
                       target="_blank"
-                      class="group/item relative inline-flex items-center pl-5 pr-12 py-2 rounded-full border border-bg-2 bg-bg-1/95 backdrop-blur-sm hover:border-fg-1 hover:bg-bg-1 text-xs md:text-sm font-medium font-sans text-fg-0 transition-all duration-200 shadow-sm max-w-full w-fit overflow-hidden"
+                      class="group/item relative w-full inline-flex items-center pl-5 pr-12 py-2 rounded-full border border-bg-2 bg-bg-1/95 backdrop-blur-sm hover:border-fg-1 hover:bg-bg-1 text-xs md:text-sm font-medium font-sans text-fg-0 transition-all duration-200  overflow-hidden"
                     >
-                      <div class="relative rounded-full px-2 overflow-hidden max-w-[250px] sm:max-w-[300px]">
-                        <span class="scrolling-text block whitespace-nowrap">
+                      <div class="relative px-2 overflow-hidden flex-1 min-w-0">
+                        <span class="dropdown-scroll-text block whitespace-nowrap">
                           {item.title}
                         </span>
                       </div>
@@ -270,6 +261,12 @@ export default function AnnouncementRotator(props: Props) {
         .animate-glow:focus-within {
           animation: none;
           border-color: var(--fg-1);
+        }
+        
+        /* The calm auto-scroll keyframe */
+        @keyframes yoyo-scroll {
+          0%, 15% { transform: translateX(0); }
+          85%, 100% { transform: translateX(var(--scroll-dist)); }
         }
       `}</style>
     </>
