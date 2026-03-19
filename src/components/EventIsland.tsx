@@ -519,89 +519,99 @@ export default function EventsIsland(props: Props) {
                                     id={`event-${event.id}`}
                                     data-index={index()}
                                   >
-                                    <Show when={event.image_url}>
-                                      <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none opacity-50 flex items-center justify-center">
-                                        <img
-                                          src={event.image_url as string}
-                                          class={`w-[150%] h-[150%] max-w-none object-cover blur-[60px] saturate-300 ${isUpcoming && "animate-spin-slow"} rounded-full`}
-                                          alt=""
+                                    <Show
+                                      when={!event.custom_html}
+                                      fallback={
+                                        <div
+                                          class="relative z-10 w-full"
+                                          innerHTML={event.custom_html!}
                                         />
-                                      </div>
-                                    </Show>
-                                    <div
-                                      class={`absolute inset-0 backdrop-blur-[30px] ${isUpcoming ? "bg-bg-0/10" : "bg-bg-0/70"} z-0 pointer-events-none`}
-                                    />
-                                    <div class="grid md:grid-cols-2 relative z-10">
-                                      <div class="p-4 md:pr-0 overflow-hidden aspect-square">
-                                        <Show
-                                          when={event.image_url}
-                                          fallback={
-                                            <div class="w-full h-full flex items-center justify-center text-fg-1/20 font-sans font-bold text-6xl uppercase tracking-tighter">
-                                              NSDC
-                                            </div>
-                                          }
-                                        >
+                                      }
+                                    >
+                                      <Show when={event.image_url}>
+                                        <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none opacity-50 flex items-center justify-center">
                                           <img
                                             src={event.image_url as string}
-                                            alt={event.title}
-                                            class="w-full h-full transition-transform duration-700"
+                                            class={`w-[150%] h-[150%] max-w-none object-cover blur-[60px] saturate-300 ${isUpcoming && "animate-spin-slow"} rounded-full`}
+                                            alt=""
                                           />
-                                        </Show>
-                                      </div>
-
-                                      <div class="flex flex-col p-6">
-                                        <div class="flex items-center gap-3 mb-6 flex-wrap">
-                                          <span
-                                            class={`text-xs font-mono font-bold uppercase tracking-widest ${event.computedStatus === "upcoming" ? "text-primary" : "text-fg-1"}`}
-                                          >
-                                            {formatDate(event.date)}
-                                          </span>
-                                          <span class="w-[4px] h-[4px] bg-fg-0/20 rounded-full"></span>
-                                          {event.venue && (
-                                            <span class="text-xs font-mono font-bold text-fg-1 uppercase tracking-widest">
-                                              {event.venue}
-                                            </span>
-                                          )}
-                                          {event.event_type && (
-                                            <span class="text-[9px] font-bold bg-primary text-primary-fg px-2 py-[2px] rounded-sm uppercase tracking-wider ml-auto">
-                                              {event.event_type}
-                                            </span>
-                                          )}
                                         </div>
-
-                                        <h3 class="font-bold text-fg-0 uppercase tracking-tighter mb-4 text-3xl xl:text-4xl leading-[1.1]">
-                                          {event.title}
-                                        </h3>
-
-                                        <Show when={event.description}>
-                                          <p class="text-sm xl:text-base text-fg-1 font-sans leading-relaxed mb-8 line-clamp-4 opacity-80">
-                                            {event.description}
-                                          </p>
-                                        </Show>
-
-                                        <div class="flex gap-4 mt-auto border-t-2 border-fg-0/10 pt-6">
-                                          <a
-                                            href={`/event/${event.id}`}
-                                            class="relative group text-xs font-bold uppercase tracking-widest text-fg-0 hover:text-primary transition-colors py-2"
+                                      </Show>
+                                      <div
+                                        class={`absolute inset-0 backdrop-blur-[30px] ${isUpcoming ? "bg-bg-0/10" : "bg-bg-0/70"} z-0 pointer-events-none`}
+                                      />
+                                      <div class="grid md:grid-cols-2 relative z-10">
+                                        <div class="p-4 md:pr-0 overflow-hidden aspect-square">
+                                          <Show
+                                            when={event.image_url}
+                                            fallback={
+                                              <div class="w-full h-full flex items-center justify-center text-fg-1/20 font-sans font-bold text-6xl uppercase tracking-tighter">
+                                                NSDC
+                                              </div>
+                                            }
                                           >
-                                            <span>
-                                              {event.button_text ||
-                                                "View Details"}
-                                            </span>
-                                            <span class="absolute bottom-0 right-0 h-[2px] w-full bg-primary transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover:scale-x-100 group-hover:origin-left" />
-                                          </a>
-                                          <Show when={event.report_url}>
-                                            <a
-                                              href={`/report/${event.id}`}
-                                              class="relative group text-xs font-bold uppercase tracking-widest text-fg-1 hover:text-fg-0 transition-colors py-2 pl-4 border-l-2 border-bg-2"
-                                            >
-                                              <span>Read Report</span>
-                                              <span class="absolute bottom-0 right-0 h-[2px] w-full bg-fg-0 transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover:scale-x-100 group-hover:origin-left" />
-                                            </a>
+                                            <img
+                                              src={event.image_url as string}
+                                              alt={event.title}
+                                              class="w-full h-full transition-transform duration-700"
+                                            />
                                           </Show>
                                         </div>
+
+                                        <div class="flex flex-col p-6">
+                                          <div class="flex items-center gap-3 mb-6 flex-wrap">
+                                            <span
+                                              class={`text-xs font-mono font-bold uppercase tracking-widest ${event.computedStatus === "upcoming" ? "text-primary" : "text-fg-1"}`}
+                                            >
+                                              {formatDate(event.date)}
+                                            </span>
+                                            <span class="w-[4px] h-[4px] bg-fg-0/20 rounded-full"></span>
+                                            {event.venue && (
+                                              <span class="text-xs font-mono font-bold text-fg-1 uppercase tracking-widest">
+                                                {event.venue}
+                                              </span>
+                                            )}
+                                            {event.event_type && (
+                                              <span class="text-[9px] font-bold bg-primary text-primary-fg px-2 py-[2px] rounded-sm uppercase tracking-wider ml-auto">
+                                                {event.event_type}
+                                              </span>
+                                            )}
+                                          </div>
+
+                                          <h3 class="font-bold text-fg-0 uppercase tracking-tighter mb-4 text-3xl xl:text-4xl leading-[1.1]">
+                                            {event.title}
+                                          </h3>
+
+                                          <Show when={event.description}>
+                                            <p class="text-sm xl:text-base text-fg-1 font-sans leading-relaxed mb-8 line-clamp-4 opacity-80">
+                                              {event.description}
+                                            </p>
+                                          </Show>
+
+                                          <div class="flex gap-4 mt-auto border-t-2 border-fg-0/10 pt-6">
+                                            <a
+                                              href={`/event/${event.id}`}
+                                              class="relative group text-xs font-bold uppercase tracking-widest text-fg-0 hover:text-primary transition-colors py-2"
+                                            >
+                                              <span>
+                                                {event.button_text ||
+                                                  "View Details"}
+                                              </span>
+                                              <span class="absolute bottom-0 right-0 h-[2px] w-full bg-primary transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover:scale-x-100 group-hover:origin-left" />
+                                            </a>
+                                            <Show when={event.report_url}>
+                                              <a
+                                                href={`/report/${event.id}`}
+                                                class="relative group text-xs font-bold uppercase tracking-widest text-fg-1 hover:text-fg-0 transition-colors py-2 pl-4 border-l-2 border-bg-2"
+                                              >
+                                                <span>Read Report</span>
+                                                <span class="absolute bottom-0 right-0 h-[2px] w-full bg-fg-0 transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover:scale-x-100 group-hover:origin-left" />
+                                              </a>
+                                            </Show>
+                                          </div>
+                                        </div>
                                       </div>
-                                    </div>
+                                    </Show>
                                   </div>
                                 );
                               }}

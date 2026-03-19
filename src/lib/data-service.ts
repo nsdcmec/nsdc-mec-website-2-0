@@ -23,14 +23,14 @@ import type {
 
 async function fetchAnnouncements(): Promise<Announcement[]> {
   const res = await pool.query<Announcement>(
-    "SELECT * FROM club.announcements ORDER BY priority ASC",
+    "SELECT id, title, link, priority FROM club.announcements ORDER BY priority ASC",
   );
   return res.rows;
 }
 
 async function fetchEvents(): Promise<Event[]> {
   const res = await pool.query<Event>(
-    "SELECT * FROM club.events ORDER BY priority ASC",
+    "SELECT id, title, description, image_url, date, venue, event_type, tags, link, report_url, custom_html, button_text, metadata FROM club.events",
   );
   return res.rows;
 }

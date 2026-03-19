@@ -3,9 +3,7 @@ export interface Announcement {
   id: number;
   priority: number;
   title: string | null;
-  date: string | null;
   link: string | null;
-  description: string | null;
 }
 
 // 2. Events & Metadata
@@ -94,12 +92,10 @@ export interface Event {
   description: string | null;
   image_url: string | null;
   date: string | null;
-  status: "upcoming" | "recent" | "past";
   venue: string | null;
   event_type: string | null;
   tags: string[];
   link: string | null;
-  priority: number;
   report_url: string | null;
   custom_html: string | null;
   button_text: string | null;
@@ -152,7 +148,6 @@ export interface AboutConfig {
   chairperson?: AboutQuote;
   external_testimonial?: AboutQuote;
   impact?: {
-    total_members_count?: string;
     line: string;
   };
 }

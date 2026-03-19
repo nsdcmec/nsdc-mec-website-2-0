@@ -1,4 +1,4 @@
-import { createSignal, onMount, onCleanup, For, createEffect } from "solid-js";
+import { createSignal, onMount, onCleanup, For, createEffect, createMemo } from "solid-js";
 import type { Announcement } from "../types";
 
 interface Props {
@@ -13,6 +13,11 @@ const CONFIG = {
 
 export default function AnnouncementRotator(props: Props) {
   if (!props.announcements || props.announcements.length === 0) return null;
+
+  // Ensure announcements are sorted by priority
+  const sortedAnnouncements = createMemo(() => 
+    [...props.announcements].sort((a, b) => a.priority - b.priority)
+  );
 
   const [currentIndex, setCurrentIndex] = createSignal(0);
   const [expanded, setExpanded] = createSignal(false);
@@ -68,7 +73,7 @@ export default function AnnouncementRotator(props: Props) {
   const updateText = () => {
     setTextOpacity(0);
     setTimeout(() => {
-      setCurrentIndex((prev) => (prev + 1) % props.announcements.length);
+      setCurrentIndex((prev) => (prev + 1) % sortedAnnouncements().length);
       setTimeout(() => {
         setTextOpacity(1);
       }, 50);
@@ -81,7 +86,7 @@ export default function AnnouncementRotator(props: Props) {
   };
 
   const startTimer = () => {
-    if (props.announcements.length > 1 && !intervalId) {
+    if (sortedAnnouncements().length > 1 && !intervalId) {
       intervalId = window.setInterval(rotate, CONFIG.rotationSpeed);
     }
   };
@@ -165,7 +170,7 @@ export default function AnnouncementRotator(props: Props) {
                     visibility: expanded() ? "hidden" : "visible",
                   }}
                 >
-                  {props.announcements[currentIndex()].title}
+                  {sortedAnnouncements()[currentIndex()].title}
                 </span>
 
                 <span
@@ -209,7 +214,7 @@ export default function AnnouncementRotator(props: Props) {
                 class="pt-3 flex flex-col gap-2 items-stretch transition-opacity duration-300 delay-75 w-full"
                 style={{ opacity: expanded() ? 1 : 0 }}
               >
-                <For each={props.announcements}>
+                <For each={sortedAnnouncements()}>
                   {(item) => (
                     <a
                       href={item.link || "#"}
