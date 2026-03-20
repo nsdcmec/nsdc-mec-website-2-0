@@ -111,14 +111,13 @@ export default function TeamList(props: TeamListProps) {
               <div class="absolute right-0 top-full mt-[-2px] z-50 bg-bg-0 border-2 border-fg-0 w-32">
                 <For each={props.allYears}>
                   {(year) => (
-                    <button
-                      onClick={() =>
-                        (window.location.href = `/teams/${year.id}`)
-                      }
-                      class={`w-full px-4 py-2 text-right font-mono text-lg border-b-2 border-fg-0 last:border-b-0 ${year.id === props.currentYear ? "bg-fg-0 text-bg-0" : "hover:bg-primary hover:text-primary-fg"}`}
+                    <a
+                      href={`/teams/${year.id}`}
+                      data-astro-prefetch
+                      class={`block w-full px-4 py-2 text-right font-mono text-lg border-b-2 border-fg-0 last:border-b-0 ${year.id === props.currentYear ? "bg-fg-0 text-bg-0" : "hover:bg-primary hover:text-primary-fg"}`}
                     >
                       {year.title}
-                    </button>
+                    </a>
                   )}
                 </For>
               </div>
@@ -180,14 +179,13 @@ export default function TeamList(props: TeamListProps) {
                     <div class="absolute left-0 top-full mt-[-2px] z-50 bg-bg-0 border border-fg-0/40 w-full">
                       <For each={props.allYears}>
                         {(year) => (
-                          <button
-                            onClick={() =>
-                              (window.location.href = `/teams/${year.id}`)
-                            }
-                            class={`w-full px-6 py-4 text-left font-mono text-2xl border border-fg-0/40 cursor-pointer last:border-b-0 hover:bg-primary hover:text-primary-fg transition-colors ${year.id === props.currentYear ? "bg-fg-0 text-bg-0" : "text-fg-0"}`}
+                          <a
+                            href={`/teams/${year.id}`}
+                            data-astro-prefetch
+                            class={`block w-full px-6 py-4 text-left font-mono text-2xl border border-fg-0/40 cursor-pointer last:border-b-0 hover:bg-primary hover:text-primary-fg transition-colors ${year.id === props.currentYear ? "bg-fg-0 text-bg-0" : "text-fg-0"}`}
                           >
                             {year.title}
-                          </button>
+                          </a>
                         )}
                       </For>
                     </div>
@@ -236,8 +234,9 @@ export default function TeamList(props: TeamListProps) {
                     <div class="mt-8 mx-2 pb-16">
                       <div class="flex flex-wrap justify-center -ml-[2px] -mt-[2px]">
                         <For each={group.members}>
-                          {(member) => {
+                          {(member, index) => {
                             const socials = member.social_links;
+                            const isCritical = index() < 6;
 
                             return (
                               <div class="flex flex-col border border-fg-0/40 p-6 bg-bg-0 rounded-none w-full sm:w-1/2 lg:w-1/3 max-w-[340px] sm:max-w-none -ml-[2px] -mt-[2px] box-border relative z-10">
@@ -254,6 +253,14 @@ export default function TeamList(props: TeamListProps) {
                                       src={member.image_url as string}
                                       alt={member.name}
                                       class="w-full h-full object-cover"
+                                      loading={isCritical ? "eager" : "lazy"}
+                                      decoding="async"
+                                      attr:fetchpriority={
+                                        isCritical ? "high" : "auto"
+                                      }
+                                      style={{
+                                        "view-transition-name": `member-img-${member.id}`,
+                                      }}
                                     />
                                   </Show>
                                 </div>
