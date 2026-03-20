@@ -129,7 +129,7 @@ export interface AboutQuote {
   name: string;
   role?: string;
   quote: string;
-  photo?: string;
+  img?: string;
   organization?: string;
 }
 
