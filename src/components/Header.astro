@@ -84,27 +84,27 @@ const navLinks = links
             d="M6 18L18 6M6 6l12 12"></path>
         </svg>
       </label>
+    </div>
 
-      <div
-        id="mobile-menu"
-        class="absolute right-0 top-11 w-max bg-bg-0 border border-bg-2 p-2 max-w-48 origin-top-right transition-all duration-200 ease-out
-               invisible opacity-0 pointer-events-auto"
-      >
-        <nav class="flex flex-col items-end space-y-1">
-          {
-            navLinks.map((link) => (
-              <a
-                href={link.url}
-                onclick="document.getElementById('nav-toggle-state').checked = false;"
-                class="relative group   font-bold font-sans text-fg-1 mx-4 hover:text-fg-0 transition-colors block w-fit"
-              >
-                <span>{link.label}</span>
-                <span class="absolute bottom-0 right-0 h-[1px] w-full bg-fg-0 transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover:scale-x-100 group-hover:origin-left" />
-              </a>
-            ))
-          }
-        </nav>
-      </div>
+    <div
+      id="mobile-menu"
+      class="absolute left-0 top-10 w-full bg-bg-1 border-b border-bg-2 p-6 md:hidden transition-all duration-300 ease-out
+             invisible opacity-0 translate-y-[-10px] pointer-events-auto"
+    >
+      <nav class="flex flex-col items-center space-y-4">
+        {
+          navLinks.map((link) => (
+            <a
+              href={link.url}
+              onclick="document.getElementById('nav-toggle-state').checked = false;"
+              class="relative group text-sm font-bold font-sans text-fg-0 uppercase tracking-widest hover:text-primary transition-colors block w-fit"
+            >
+              <span>{link.label}</span>
+              <span class="absolute bottom-0 right-0 h-[1px] w-full bg-primary transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover:scale-x-100 group-hover:origin-left" />
+            </a>
+          ))
+        }
+      </nav>
     </div>
   </div>
 </header>

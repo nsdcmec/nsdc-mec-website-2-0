@@ -22,6 +22,12 @@ export default function EventsIsland(props: Props) {
   const [searchQuery, setSearchQuery] = createSignal("");
   const [activeIndex, setActiveIndex] = createSignal(0);
   const [showMobileFilters, setShowMobileFilters] = createSignal(false);
+  let manualToggleTime = 0;
+
+  const toggleMobileFilters = () => {
+    setShowMobileFilters(!showMobileFilters());
+    manualToggleTime = Date.now();
+  };
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "TBA";
@@ -201,12 +207,49 @@ export default function EventsIsland(props: Props) {
       observedElements.forEach((el) => verticalObserver.observe(el));
     };
 
+    let lastScrollY = window.scrollY;
+    const handleWindowScroll = () => {
+      if (props.isMinimal) return;
+      
+      const scrollY = window.scrollY;
+      const isAtTop = scrollY <= 5;
+      const isScrollingDown = scrollY > lastScrollY;
+      const scrollDiff = Math.abs(scrollY - lastScrollY);
+      
+      const timeSinceManual = Date.now() - manualToggleTime;
+      // If we just manually toggled, ignore scroll for 600ms to allow layout adjustment
+      if (timeSinceManual < 600) {
+        lastScrollY = scrollY;
+        return;
+      }
+
+      // Auto-open only when reaching the very top
+      if (isAtTop && !showMobileFilters()) {
+        setShowMobileFilters(true);
+      }
+
+      // Auto-close on significant scroll down
+      if (
+        scrollY > 120 &&
+        isScrollingDown &&
+        scrollDiff > 10 &&
+        showMobileFilters()
+      ) {
+        setShowMobileFilters(false);
+      }
+
+      lastScrollY = scrollY;
+    };
+
     observeElements();
+    window.addEventListener("scroll", handleWindowScroll, { passive: true });
+    handleWindowScroll();
 
     const interval = setInterval(observeElements, 1000);
     onCleanup(() => {
       clearInterval(interval);
       verticalObserver.disconnect();
+      window.removeEventListener("scroll", handleWindowScroll);
     });
   });
 
@@ -232,7 +275,7 @@ export default function EventsIsland(props: Props) {
                   {processedData().length} Results
                 </span>
                 <button
-                  onClick={() => setShowMobileFilters(!showMobileFilters())}
+                  onClick={toggleMobileFilters}
                   class={`p-2 border transition-all duration-300 rounded-sm ${showMobileFilters() ? "bg-primary text-primary-fg border-primary" : "border-fg-0/20 bg-bg-1 text-fg-0"}`}
                 >
                   <svg
@@ -256,45 +299,60 @@ export default function EventsIsland(props: Props) {
           {/* Search & Filters - Hidden in Minimal Mode, Collapsible on Mobile */}
           <Show when={!props.isMinimal && showMobileFilters()}>
             <div class="flex flex-col gap-2 relative z-50 pt-2 transition-all duration-300 ease-in-out">
-              <input
-                type="text"
-                placeholder="Search events..."
-                class="bg-bg-1 border border-fg-0/10 text-xs font-bold uppercase tracking-widest p-2 w-full outline-none focus:border-primary transition-colors text-fg-0 placeholder:text-fg-1/50"
-                value={searchQuery()}
-                onInput={(e) => {
-                  setSearchQuery(e.currentTarget.value);
-                  window.scrollTo({ top: 0, behavior: "smooth" });
-                }}
-              />
+              <div class="flex flex-col gap-1 w-full">
+                <label class="text-[9px] font-bold uppercase tracking-[0.2em] text-fg-1">
+                  Search
+                </label>
+                <input
+                  type="text"
+                  placeholder="Search events..."
+                  class="bg-bg-1 border border-fg-0/10 text-xs font-bold uppercase tracking-widest p-2 w-full outline-none focus:border-primary transition-colors text-fg-0 placeholder:text-fg-1/50"
+                  value={searchQuery()}
+                  onInput={(e) => {
+                    setSearchQuery(e.currentTarget.value);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                />
+              </div>
               <div class="flex gap-2">
-                <Dropdown
-                  options={[
-                    { id: "all", label: "All" },
-                    { id: "upcoming", label: "Upcoming" },
-                    { id: "recent", label: "Recent" },
-                    { id: "past", label: "Past" },
-                  ]}
-                  selectedId={filter()}
-                  onSelect={(id) => {
-                    setFilter(id as string);
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                  }}
-                  buttonClass={dropdownButtonClass}
-                  menuClass={dropdownMenuClass}
-                />
-                <Dropdown
-                  options={[
-                    { id: "newest", label: "Newest" },
-                    { id: "oldest", label: "Oldest" },
-                  ]}
-                  selectedId={sort()}
-                  onSelect={(id) => {
-                    setSort(id as string);
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                  }}
-                  buttonClass={dropdownButtonClass}
-                  menuClass={dropdownMenuClass}
-                />
+                <div class="flex flex-col gap-1 w-full">
+                  <label class="text-[9px] font-bold uppercase tracking-[0.2em] text-fg-1">
+                    Filter
+                  </label>
+                  <Dropdown
+                    options={[
+                      { id: "all", label: "All" },
+                      { id: "upcoming", label: "Upcoming" },
+                      { id: "recent", label: "Recent" },
+                      { id: "past", label: "Past" },
+                    ]}
+                    selectedId={filter()}
+                    onSelect={(id) => {
+                      setFilter(id as string);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    buttonClass={dropdownButtonClass}
+                    menuClass={dropdownMenuClass}
+                  />
+                </div>
+                <div class="flex flex-col gap-1 w-full">
+                  <label class="text-[9px] font-bold uppercase tracking-[0.2em] text-fg-1">
+                    Sort by
+                  </label>
+                  <Dropdown
+                    options={[
+                      { id: "newest", label: "Newest" },
+                      { id: "oldest", label: "Oldest" },
+                    ]}
+                    selectedId={sort()}
+                    onSelect={(id) => {
+                      setSort(id as string);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    buttonClass={dropdownButtonClass}
+                    menuClass={dropdownMenuClass}
+                  />
+                </div>
               </div>
             </div>
           </Show>

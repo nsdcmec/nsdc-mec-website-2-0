@@ -219,11 +219,17 @@ export interface Link {
   priority: number;
 }
 
+export interface ShortUrlMetadata {
+  height?: string;
+  types?: string[];
+  excluded_types?: string[];
+}
+
 export interface ShortUrl {
   slug: string;
   destination_url: string;
   type: "iframe" | "redirect" | "embed" | "gform" | "resource-page";
-  metadata?: Record<string, any>;
+  metadata?: ShortUrlMetadata;
 }
 
 export interface ResourceMetadata {

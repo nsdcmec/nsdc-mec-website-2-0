@@ -48,10 +48,11 @@ const currentStatus = (() => {
   colors={data.config.colors}
 >
     {/* Mobile Sticky Header */}
-    <div class="lg:hidden sticky top-10 z-40 bg-bg-0/95 backdrop-blur-md border-b-2 border-fg-0 flex flex-col pt-4 pb-4 px-4 shadow-sm gap-3">
+    <div class="md:hidden sticky top-10 z-40 bg-bg-0/95 backdrop-blur-md border-b-2 border-fg-0 flex flex-col pt-3 pb-3 px-4 shadow-sm gap-2">
       <div class="flex items-center justify-between">
-        <a href="/events" class="text-xs font-bold uppercase tracking-widest text-fg-1 hover:text-fg-0 transition-colors">
-          ← Back
+        <a href="/events" class="group relative w-fit text-xs font-bold uppercase tracking-widest text-fg-1 hover:text-fg-0 transition-colors">
+          <span>← Back</span>
+          <span class="absolute bottom-0 right-0 h-[1px] w-full bg-fg-0 transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover:scale-x-100 group-hover:origin-left" />
         </a>
         {currentStatus === "past" && (
           <span class="text-xs font-bold uppercase tracking-widest text-fg-0 border border-fg-0 px-3 py-1 bg-bg-1">
@@ -59,19 +60,19 @@ const currentStatus = (() => {
           </span>
         )}
       </div>
-      <h1 class="text-3xl sm:text-4xl font-black uppercase tracking-tighter leading-tight break-words">
+      <h1 class="text-3xl md:text-4xl font-black uppercase tracking-tighter leading-[1.1] break-words">
         {event.title}
       </h1>
-      <div class="flex items-start gap-4 mt-1">
-        <span class={`px-3 py-1 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] border-2 border-fg-0 shrink-0 ${currentStatus === "upcoming" ? "bg-primary text-primary-fg border-primary" : "bg-bg-0 text-fg-0"}`}>
+      <div class="flex items-start gap-3 mt-0.5">
+        <span class={`px-2 py-1 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] border-2 border-fg-0 shrink-0 ${currentStatus === "upcoming" ? "bg-primary text-primary-fg border-primary" : "bg-bg-0 text-fg-0"}`}>
           {currentStatus}
         </span>
-        <div class="flex flex-col gap-1 pt-[2px]">
-          <span class="text-[10px] sm:text-xs font-mono font-bold text-fg-1 uppercase tracking-widest">
+        <div class="flex flex-col gap-0.5 pt-[1px]">
+          <span class="text-[10px] md:text-xs font-mono font-bold text-fg-1 uppercase tracking-widest">
             {formattedDate}
           </span>
           {event.venue && (
-            <span class="text-[10px] sm:text-xs font-mono font-bold text-fg-1 uppercase tracking-widest leading-tight">
+            <span class="text-[10px] md:text-xs font-mono font-bold text-fg-1 uppercase tracking-widest leading-tight">
               {event.venue}
             </span>
           )}
@@ -82,33 +83,35 @@ const currentStatus = (() => {
           href={event.link}
           target="_blank"
           rel="noopener noreferrer"
-          class="block w-full py-3 mt-2 text-center text-xs font-bold uppercase tracking-widest bg-primary text-primary-fg hover:bg-fg-0 hover:text-bg-0 transition-colors border-2 border-primary hover:border-fg-0"
+          class="block w-full py-2.5 mt-1 text-center text-xs font-bold uppercase tracking-widest bg-primary text-primary-fg hover:bg-fg-0 hover:text-bg-0 transition-colors border-2 border-primary hover:border-fg-0"
         >
           {event.button_text || "Register Now"}
         </a>
       )}
     </div>
 
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8 mt-8 lg:mt-24">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+    <div class="container mx-auto px-4 md:px-6  mt-6 md:mt-16">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
         {/* Sidebar Header (Date, Venue, Tags, Contact, Event Ended, Registration) */}
-        <div class="hidden lg:flex lg:col-span-3 lg:sticky lg:top-10 space-y-12 pb-12 self-start flex-col">
+        <div class="hidden md:flex md:col-span-3 md:sticky md:top-10 space-y-8 md:space-y-10 pb-10 self-start flex-col">
           <a
             href="/events"
-            class="hidden lg:inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-fg-1 hover:text-fg-0 transition-colors mb-4"
+            class="group relative w-fit hidden md:inline-flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-fg-1 hover:text-fg-0 transition-colors mb-2"
           >
-            ← Back to Events
+            <span>← Back to Events</span>
+            <span class="absolute bottom-0 right-0 h-[1px] w-full bg-fg-0 transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover:scale-x-100 group-hover:origin-left" />
           </a>
 
-          <div class="lg:hidden mb-4">
-            <a href="/events" class="text-[10px] font-bold uppercase tracking-widest text-fg-1 hover:text-fg-0 transition-colors">
-              ← Back
+          <div class="md:hidden mb-2">
+            <a href="/events" class="group relative w-fit text-xs font-bold uppercase tracking-widest text-fg-1 hover:text-fg-0 transition-colors">
+              <span>← Back</span>
+              <span class="absolute bottom-0 right-0 h-[1px] w-full bg-fg-0 transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover:scale-x-100 group-hover:origin-left" />
             </a>
           </div>
 
-        <div class="space-y-6">
+        <div class="space-y-4 md:space-y-6">
           <h1
-            class="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter leading-[0.9] text-fg-0 break-words"
+            class="text-4xl md:text-5xl  font-black uppercase tracking-tighter leading-[0.9] text-fg-0 break-words"
           >
             {event.title}
           </h1>
@@ -128,15 +131,15 @@ const currentStatus = (() => {
             }
           </div>
 
-          <div class="flex flex-col gap-4 border-l-2 border-fg-0 pl-4 py-2">
+          <div class="flex flex-col gap-3 md:gap-4 border-l-2 border-fg-0 pl-4 py-1 md:py-2">
             <div class="flex flex-col">
               <span
-                class="text-[9px] font-mono font-bold text-fg-1 uppercase tracking-widest mb-1"
+                class="text-[9px] font-mono font-bold text-fg-1 uppercase tracking-widest mb-0.5 md:mb-1"
               >
                 Date
               </span>
               <span
-                class="text-lg font-bold text-fg-0 uppercase tracking-tight"
+                class=" font-bold text-fg-0 uppercase tracking-tight"
               >
                 {formattedDate}
               </span>
@@ -145,10 +148,10 @@ const currentStatus = (() => {
             {
               event.venue && (
                 <div class="flex flex-col">
-                  <span class="text-[9px] font-mono font-bold text-fg-1 uppercase tracking-widest mb-1">
+                  <span class="text-[9px] font-mono font-bold text-fg-1 uppercase tracking-widest mb-0.5 md:mb-1">
                     Venue
                   </span>
-                  <span class="text-lg font-bold text-fg-0 uppercase tracking-tight">
+                  <span class=" font-bold text-fg-0 uppercase tracking-tight">
                     {event.venue}
                   </span>
                 </div>
@@ -158,9 +161,9 @@ const currentStatus = (() => {
 
           {
             event.tags && event.tags.length > 0 && (
-              <div class="flex flex-wrap gap-2 pt-4">
+              <div class="flex flex-wrap gap-2 pt-2 md:pt-4">
                 {event.tags.map((tag) => (
-                  <span class="text-[10px] font-bold bg-bg-1 text-fg-1 px-2 py-1 uppercase tracking-widest border border-bg-2">
+                  <span class="text-[10px] font-bold bg-bg-1 text-fg-1 px-2 py-0.5 md:py-1 uppercase tracking-widest border border-bg-2">
                     #{tag}
                   </span>
                 ))}
@@ -169,20 +172,20 @@ const currentStatus = (() => {
           }
 
           {/* Registration / Contacts */}
-          <div class="pt-8 border-t-2 border-fg-0/10 flex flex-col gap-8">
+          <div class="pt-6 md:pt-8 border-t-2 border-fg-0/10 flex flex-col gap-6 md:gap-8">
             {
               currentStatus === "past" && (
-                <div class="flex flex-col border-2 border-fg-0 p-6 bg-bg-1">
-                  <h3 class="text-xl font-bold uppercase tracking-tighter text-fg-0 mb-2">
+                <div class="flex flex-col border-2 border-fg-0 p-4 md:p-6 bg-bg-1">
+                  <h3 class=" font-bold uppercase tracking-tighter text-fg-0 mb-1 md:mb-2">
                     Event Ended
                   </h3>
-                  <p class="text-fg-1 text-xs font-sans mb-4">
+                  <p class="text-fg-1 text-xs font-sans mb-3 md:mb-4">
                     This event has already concluded.
                   </p>
                   {event.report_url && (
                     <a
                       href={`/report/${event.id}`}
-                      class="block w-full py-4 text-center text-sm font-bold uppercase tracking-widest bg-primary text-primary-fg hover:bg-fg-0 hover:text-bg-0 transition-colors border-2 border-primary hover:border-fg-0"
+                      class="block w-full py-3 md:py-4 text-center text-sm font-bold uppercase tracking-widest bg-primary text-primary-fg hover:bg-fg-0 hover:text-bg-0 transition-colors border-2 border-primary hover:border-fg-0"
                     >
                       View Event Report
                     </a>
@@ -193,25 +196,25 @@ const currentStatus = (() => {
 
             {/* Registration Details */}
             <div class="flex flex-col">
-              <h3 class="text-[10px] font-bold uppercase tracking-widest text-fg-1 mb-4 border-b-2 border-bg-2 pb-2">
+              <h3 class="text-[10px] font-bold uppercase tracking-widest text-fg-1 mb-3 md:mb-4 border-b-2 border-bg-2 pb-2">
                 Registration details
               </h3>
               {
                 meta.fees && meta.fees.length > 0 ? (
-                  <div class="space-y-4 mb-6">
+                  <div class="space-y-2 md:space-y-3 mb-2 md:mb-3">
                     {meta.fees.map((fee) => (
                       <div class="flex flex-col">
-                        <span class="text-[10px] font-bold text-fg-1 uppercase tracking-widest mb-1">
+                        <span class="text-[10px] font-bold text-fg-1 uppercase tracking-widest mb-0.5">
                           {fee.label}
                         </span>
-                        <span class="text-lg font-bold uppercase tracking-tighter text-fg-0">
+                        <span class=" font-semibold  tracking-tighter text-fg-0">
                           {fee.amount}
                         </span>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p class="text-fg-1 text-xs italic mb-6">
+                  <p class="text-fg-1 text-xs italic mb-4 md:mb-6">
                     No specific registration fees.
                   </p>
                 )
@@ -223,7 +226,7 @@ const currentStatus = (() => {
                     href={event.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="block w-full py-4 text-center text-sm font-bold uppercase tracking-widest bg-primary text-primary-fg hover:bg-fg-0 hover:text-bg-0 transition-colors border-2 border-primary hover:border-fg-0"
+                    class="block w-full py-3 md:py-4 text-center text-sm font-bold uppercase tracking-widest bg-primary text-primary-fg hover:bg-fg-0 hover:text-bg-0 transition-colors border-2 border-primary hover:border-fg-0"
                   >
                     {event.button_text || "Register Now"}
                   </a>
@@ -234,26 +237,26 @@ const currentStatus = (() => {
             {/* Contacts */}
             {
               meta.contacts && meta.contacts.length > 0 && (
-                <div class="flex flex-col border-t-2 border-bg-2 pt-8">
-                  <h3 class="text-[10px] font-bold uppercase tracking-widest text-fg-1 mb-4 border-b-2 border-bg-2 pb-2">
+                <div class="flex flex-col  border-bg-2 pt-2">
+                  <h3 class="text-[10px] font-bold uppercase tracking-widest text-fg-1 mb-3 md:mb-4 border-b-2 border-bg-2 pb-2">
                     Contact
                   </h3>
-                  <div class="space-y-4 text-sm">
+                  <div class="space-y-3 md:space-y-4 text-sm">
                     {meta.contacts.map((contact) => (
                       <div class="flex flex-col">
-                        <p class="font-bold uppercase tracking-tight text-fg-0 mb-1">
+                        <p class="font-bold uppercase tracking-tight text-fg-0 mb-0.5">
                           {contact.name}
                         </p>
                         {contact.role && (
-                          <p class="text-[9px] font-bold uppercase tracking-widest text-fg-1 mb-2">
+                          <p class="text-[9px] font-bold uppercase tracking-widest text-fg-1 mb-1 md:mb-2">
                             {contact.role}
                           </p>
                         )}
-                        <div class="flex flex-col gap-1 mt-1">
+                        <div class="flex flex-col gap-0.5 mt-0.5">
                           {contact.phone && (
                             <a
                               href={`tel:${contact.phone}`}
-                              class="group relative w-max text-xs text-fg-0 font-mono hover:text-primary transition-colors py-1"
+                              class="group relative w-max text-xs text-fg-0 font-mono hover:text-primary transition-colors py-0.5"
                             >
                               <span>{contact.phone}</span>
                               <span class="absolute bottom-0 right-0 h-[1px] w-full bg-primary transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover:scale-x-100 group-hover:origin-left" />
@@ -262,7 +265,7 @@ const currentStatus = (() => {
                           {contact.email && (
                             <a
                               href={`mailto:${contact.email}`}
-                              class="group relative w-max text-xs text-fg-0 font-mono hover:text-primary transition-colors py-1"
+                              class="group relative w-max text-xs text-fg-0 font-mono hover:text-primary transition-colors py-0.5"
                             >
                               <span>{contact.email}</span>
                               <span class="absolute bottom-0 right-0 h-[1px] w-full bg-primary transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover:scale-x-100 group-hover:origin-left" />
@@ -277,17 +280,17 @@ const currentStatus = (() => {
             }
           </div>
         </div>
-      </div> {/* Fix missing closure for lg:col-span-4 */}
+      </div> {/* Fix missing closure for md:col-span-4 */}
 
         {/* Main Content Area */}
-        <div class="lg:col-span-9 flex flex-col gap-16 pb-16">
+        <div class="md:col-span-9 flex flex-col gap-8 md:gap-12 pb-12 md:pb-16">
         
         {/* Mobile Info Display (shown only on mobile) */}
         {
           event.tags && event.tags.length > 0 && (
-            <div class="lg:hidden flex flex-wrap gap-2 mb-2">
+            <div class="md:hidden flex flex-wrap gap-2 mb-2">
               {event.tags.map((tag) => (
-                <span class="text-[10px] font-bold bg-bg-1 text-fg-1 px-2 py-1 uppercase tracking-widest border border-bg-2">
+                <span class="text-[10px] font-bold bg-bg-1 text-fg-1 px-2 py-0.5 uppercase tracking-widest border border-bg-2">
                   #{tag}
                 </span>
               ))}
@@ -297,7 +300,7 @@ const currentStatus = (() => {
 
         {/* Main Image */}
         {event.image_url && (
-          <figure class="w-full relative   mb-4  border-fg-0 flex justify-center">
+          <figure class="w-full relative   mb-2 md:mb-4  border-fg-0 flex justify-center">
             <img
               src={event.image_url}
               alt={event.title}
@@ -307,14 +310,14 @@ const currentStatus = (() => {
         )}
 
         {/* Description */}
-        <section class="space-y-4 pt-4 lg:pt-0">
+        <section class="space-y-4 pt-2 md:pt-0">
           <h2
             class="text-2xl font-bold uppercase tracking-tighter text-fg-0 border-b-2 border-fg-0 pb-2"
           >
             About
           </h2>
           <div
-            class="prose-content text-fg-1 font-sans text-lg md:text-xl leading-relaxed space-y-6 transition-colors duration-300"
+            class="prose-content text-fg-1 font-sans text-sm md:text-base  leading-relaxed space-y-4 md:space-y-6 transition-colors duration-300"
           >
             {
               event.description?.split("\n").map((paragraph) => {
@@ -326,12 +329,12 @@ const currentStatus = (() => {
         </section>
 
         {/* Mobile Registration Details (Moved after About) */}
-        <div class="lg:hidden flex flex-col gap-6 pt-4">
+        <div class="md:hidden flex flex-col gap-4 pt-2">
           {
             meta.fees && meta.fees.length > 0 && (
-              <div class="flex flex-col gap-3 p-4 border-2 border-bg-2 bg-bg-1">
-                <span class="text-[10px] font-bold uppercase tracking-widest text-fg-1 border-b border-bg-2 pb-2">Registration Fees</span>
-                <div class="flex flex-col space-y-2">
+              <div class="flex flex-col gap-2 p-3 border-2 border-bg-2 bg-bg-1">
+                <span class="text-[10px] font-bold uppercase tracking-widest text-fg-1 border-b border-bg-2 pb-1.5">Registration Fees</span>
+                <div class="flex flex-col space-y-1.5">
                   {meta.fees.map((fee) => (
                     <div class="flex justify-between items-center text-sm font-bold uppercase tracking-tighter text-fg-0">
                       <span>{fee.label}</span>
@@ -347,51 +350,51 @@ const currentStatus = (() => {
         {/* Rounds */}
         {
           meta.rounds && meta.rounds.length > 0 && (
-            <section class="space-y-6 pt-8">
+            <section class="space-y-4 md:space-y-6 pt-6 md:pt-8">
               <h2 class="text-2xl font-bold uppercase tracking-tighter text-fg-0 border-b-2 border-fg-0 pb-2">
                 Structure
               </h2>
-              <div class="grid gap-6">
+              <div class="grid gap-4">
                 {meta.rounds.map((round) => (
-                  <div class="border-2 border-bg-2 p-6 md:p-8">
-                    <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-4 pb-4 border-b-2 border-bg-2">
-                      <h3 class="text-2xl font-bold uppercase tracking-tight text-fg-0">
+                  <div class="border-2 border-bg-2 p-4 md:p-6">
+                    <div class="flex flex-col md:flex-row justify-between md:items-center gap-2 md:gap-4 mb-3 md:mb-4 pb-3 md:pb-4 border-b-2 border-bg-2">
+                      <h3 class="text-xl font-bold uppercase tracking-tight text-fg-0">
                         {round.name}
                       </h3>
                       <span
-                        class={`w-max px-3 py-1 text-[10px] uppercase font-bold tracking-[0.2em] border-2 ${round.format === "online" ? "border-primary text-primary" : "border-fg-0 text-fg-0"}`}
+                        class={`w-max px-2 md:px-3 py-0.5 md:py-1 text-[10px] uppercase font-bold tracking-[0.2em] border-2 ${round.format === "online" ? "border-primary text-primary" : "border-fg-0 text-fg-0"}`}
                       >
                         {round.format}
                       </span>
                     </div>
-                    <p class="text-fg-1 text-lg leading-relaxed mb-6">
+                    <p class="text-fg-1 text-sm md:text-base leading-relaxed mb-4 md:mb-6">
                       {round.desc}
                     </p>
 
                     {(round.objective || round.criteria || round.outcome) && (
-                      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
                         {round.objective && (
-                          <div class="flex flex-col gap-2">
+                          <div class="flex flex-col gap-1.5 md:gap-2">
                             <span class="text-[10px] font-bold uppercase tracking-widest text-fg-0 border-b border-fg-0/10 pb-1">
                               Objective
                             </span>
-                            <p class="text-sm text-fg-1">{round.objective}</p>
+                            <p class="text-xs md:text-sm text-fg-1">{round.objective}</p>
                           </div>
                         )}
                         {round.criteria && (
-                          <div class="flex flex-col gap-2">
+                          <div class="flex flex-col gap-1.5 md:gap-2">
                             <span class="text-[10px] font-bold uppercase tracking-widest text-fg-0 border-b border-fg-0/10 pb-1">
                               Criteria
                             </span>
-                            <p class="text-sm text-fg-1">{round.criteria}</p>
+                            <p class="text-xs md:text-sm text-fg-1">{round.criteria}</p>
                           </div>
                         )}
                         {round.outcome && (
-                          <div class="flex flex-col gap-2">
+                          <div class="flex flex-col gap-1.5 md:gap-2">
                             <span class="text-[10px] font-bold uppercase tracking-widest text-fg-0 border-b border-fg-0/10 pb-1">
                               Outcome
                             </span>
-                            <p class="text-sm text-fg-1">{round.outcome}</p>
+                            <p class="text-xs md:text-sm text-fg-1">{round.outcome}</p>
                           </div>
                         )}
                       </div>
@@ -406,28 +409,28 @@ const currentStatus = (() => {
         {/* Prizes */}
         {
           meta.prizes && meta.prizes.length > 0 && (
-            <section class="space-y-6 pt-8">
+            <section class="space-y-4 md:space-y-6 pt-6 md:pt-8">
               <h2 class="text-2xl font-bold uppercase tracking-tighter text-fg-0 border-b-2 border-fg-0 pb-2">
                 Prizes & Rewards
               </h2>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 {meta.prizes
                   .sort((a, b) => a.priority - b.priority)
                   .map((prize) => {
                     return (
-                      <div class="border-2 border-bg-2 p-6 md:p-8 flex flex-col justify-between">
-                        <div class="mb-8">
-                          <h4 class="text-sm font-bold uppercase tracking-widest text-fg-1 mb-2">
+                      <div class="border-2 border-bg-2 p-4 md:p-6 flex flex-col justify-between">
+                        <div class="mb-6 md:mb-8">
+                          <h4 class="text-sm font-bold uppercase tracking-widest text-fg-1 mb-1 md:mb-2">
                             {prize.title}
                           </h4>
                           <p
-                            class={`text-4xl lg:text-5xl font-black uppercase tracking-tighter ${prize.position === 1 ? "text-primary" : "text-fg-0"} leading-none`}
+                            class={`text-3xl md:text-5xl font-black uppercase tracking-tighter ${prize.position === 1 ? "text-primary" : "text-fg-0"} leading-none`}
                           >
                             {prize.reward}
                           </p>
                         </div>
                         {prize.desc && (
-                          <p class="text-sm text-fg-1 pt-4 border-t-2 border-bg-2">
+                          <p class="text-xs md:text-sm text-fg-1 pt-3 md:pt-4 border-t-2 border-bg-2">
                             {prize.desc}
                           </p>
                         )}
@@ -442,22 +445,22 @@ const currentStatus = (() => {
         {/* Collaborators */}
         {
           meta.collaborators && meta.collaborators.length > 0 && (
-            <section class="space-y-6 pt-8">
+            <section class="space-y-4 md:space-y-6 pt-6 md:pt-8">
               <h2 class="text-2xl font-bold uppercase tracking-tighter text-fg-0 border-b-2 border-fg-0 pb-2">
                 In Collaboration With
               </h2>
-              <div class="flex flex-wrap gap-12 items-center">
+              <div class="flex flex-wrap gap-8 md:gap-12 items-center">
                 {meta.collaborators.map((collab) => (
-                  <div class="flex items-center gap-4">
+                  <div class="flex items-center gap-3 md:gap-4">
                     {collab.img && (
                       <img
                         src={collab.img}
                         alt={collab.name}
-                        class="h-16 w-auto object-contain"
+                        class="h-12 md:h-16 w-auto object-contain"
                       />
                     )}
                     {!collab.img && (
-                      <span class="font-bold uppercase tracking-widest text-fg-0">
+                      <span class="font-bold uppercase tracking-widest text-fg-0 text-sm md:text-base">
                         {collab.name}
                       </span>
                     )}
@@ -469,18 +472,34 @@ const currentStatus = (() => {
         }
 
         {/* Contacts (Mobile Only - moved to bottom) */}
-        <div class="lg:hidden flex flex-col gap-6 pt-8 mt-8 border-t-4 border-fg-0">
+        <div class="md:hidden flex flex-col gap-4 pt-6 mt-6 border-t-4 border-fg-0">
           {
             meta.contacts && meta.contacts.length > 0 && (
-              <div class="flex flex-col gap-3 pt-4 border-t-2 border-fg-0/10">
-                <span class="text-[10px] font-bold uppercase tracking-widest text-fg-1 mb-1 border-b-2 border-bg-2 pb-2">Contact Details</span>
+              <div class="flex flex-col gap-2.5 pt-3 border-t-2 border-fg-0/10">
+                <span class="text-[10px] font-bold uppercase tracking-widest text-fg-1 mb-0.5 border-b-2 border-bg-2 pb-1.5">Contact Details</span>
                 {meta.contacts.map((contact) => (
-                  <div class="flex flex-col mt-2">
+                  <div class="flex flex-col mt-1.5">
                     <span class="font-bold uppercase tracking-tighter text-fg-0 text-sm">{contact.name}</span>
                     {contact.role && <span class="text-[9px] font-bold uppercase tracking-widest text-fg-1">{contact.role}</span>}
-                    <div class="flex flex-wrap gap-4 mt-1">
-                      {contact.phone && <a href={`tel:${contact.phone}`} class="text-xs font-mono text-primary hover:underline py-1 w-max">{contact.phone}</a>}
-                      {contact.email && <a href={`mailto:${contact.email}`} class="text-xs font-mono text-primary hover:underline py-1 w-max">{contact.email}</a>}
+                    <div class="flex flex-wrap gap-3 mt-0.5">
+                      {contact.phone && (
+                        <a
+                          href={`tel:${contact.phone}`}
+                          class="group relative w-max text-[11px] font-mono text-primary hover:text-fg-0 transition-colors py-0.5"
+                        >
+                          <span>{contact.phone}</span>
+                          <span class="absolute bottom-0 right-0 h-[1px] w-full bg-fg-0 transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover:scale-x-100 group-hover:origin-left" />
+                        </a>
+                      )}
+                      {contact.email && (
+                        <a
+                          href={`mailto:${contact.email}`}
+                          class="group relative w-max text-[11px] font-mono text-primary hover:text-fg-0 transition-colors py-0.5"
+                        >
+                          <span>{contact.email}</span>
+                          <span class="absolute bottom-0 right-0 h-[1px] w-full bg-fg-0 transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover:scale-x-100 group-hover:origin-left" />
+                        </a>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -496,7 +515,7 @@ const currentStatus = (() => {
     {
       event.custom_html && (
         <div
-          class="mt-24 border-t-4 border-fg-0 pt-16"
+          class="mt-12 md:mt-24 border-t-4 border-fg-0 pt-8 md:pt-16"
           set:html={event.custom_html}
         />
       )
