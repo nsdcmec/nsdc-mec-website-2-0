@@ -19,11 +19,11 @@ export default function TeamList(props: TeamListProps) {
   const [activeRole, setActiveRole] = createSignal("all");
   const [isYearOpen, setIsYearOpen] = createSignal(false);
   const [searchQuery, setSearchQuery] = createSignal("");
-  const [showMobileSearch, setShowMobileFilters] = createSignal(false);
+  const [showMobileSearch, setShowMobileSearch] = createSignal(false);
   let manualToggleTime = 0;
 
   const toggleMobileFilters = () => {
-    setShowMobileFilters(!showMobileFilters());
+    setShowMobileSearch(!showMobileSearch());
     manualToggleTime = Date.now();
   };
 
@@ -121,7 +121,7 @@ export default function TeamList(props: TeamListProps) {
 
       // Auto-open only when reaching the very top
       if (isAtTop && !showMobileSearch()) {
-        setShowMobileFilters(true);
+        setShowMobileSearch(true);
       }
 
       // Auto-close on significant scroll down
@@ -131,7 +131,7 @@ export default function TeamList(props: TeamListProps) {
         scrollDiff > 10 &&
         showMobileSearch()
       ) {
-        setShowMobileFilters(false);
+        setShowMobileSearch(false);
       }
 
       lastScrollY = scrollY;

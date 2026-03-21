@@ -23,8 +23,6 @@ const formattedDate = (() => {
     day: "numeric",
   });
 })();
-
-const meta = event.metadata || {};
 ---
 
 <Layout
@@ -105,37 +103,13 @@ const meta = event.metadata || {};
             </a>
           </div>
         </div>
-
-        {
-          meta.contacts && meta.contacts.length > 0 && (
-            <div class="flex flex-col border-t-2 border-bg-2 pt-6">
-              <h3 class="text-[10px] font-bold uppercase tracking-widest text-fg-1 mb-4 border-b-2 border-bg-2 pb-2">
-                Organizers
-              </h3>
-              <div class="space-y-4">
-                {meta.contacts.map((contact) => (
-                  <div class="flex flex-col">
-                    <p class="font-bold uppercase tracking-tight text-xs text-fg-0">
-                      {contact.name}
-                    </p>
-                    {contact.role && (
-                      <p class="text-[9px] font-bold uppercase tracking-widest text-fg-1">
-                        {contact.role}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )
-        }
       </div>
     </aside>
 
     {/* Right Side: PDF Viewer */}
-    <main class="flex-grow p-2 md:p-4 bg-bg-2">
+    <main class="flex-grow md:p-4 bg-bg-2">
       <div
-        class="w-full h-[70vh] lg:h-screen bg-white border-2 border-fg-0 shadow-xl relative overflow-hidden"
+        class="w-full h-[70vh] lg:h-screen bg-white relative overflow-hidden"
       >
         <iframe
           src={`${event.report_url}#view=FitH&toolbar=1&navpanes=0&scrollbar=1`}
