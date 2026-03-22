@@ -4,6 +4,7 @@ import HeroEvent from "./HeroEvent";
 import HeroAnimation from "./HeroAnimation";
 import Announcements from "./AnnouncementIsland";
 import { parseEventDate } from "../lib/date-utils";
+import { getTarget, getRel } from "../lib/link-utils";
 
 interface Props {
   config: HeroConfig;
@@ -161,8 +162,8 @@ export default function HeroClient(props: Props) {
                           <Show when={props.main.link}>
                             <a
                               href={props.main.link}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                              target={getTarget(props.main.link)}
+                              rel={getRel(props.main.link)}
                               class="flex-shrink-0 whitespace-nowrap px-6 py-2.5 bg-primary text-primary-fg font-bold font-sans text-xs uppercase tracking-widest shadow-sm hover:opacity-90 transition-opacity"
                             >
                               {props.main.buttontext || "Learn More"}
@@ -181,7 +182,8 @@ export default function HeroClient(props: Props) {
                         <Show when={props.main.link}>
                           <a
                             href={props.main.link}
-                            target="_blank"
+                            target={getTarget(props.main.link)}
+                            rel={getRel(props.main.link)}
                             class="text-[10px] font-bold text-primary uppercase tracking-widest underline decoration-2 underline-offset-4"
                           >
                             {props.main.buttontext || "Learn More"}

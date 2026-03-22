@@ -1,5 +1,6 @@
 import { createSignal, onMount, onCleanup, For, createEffect, createMemo } from "solid-js";
 import type { Announcement } from "../types";
+import { getTarget, getRel } from "../lib/link-utils";
 
 interface Props {
   announcements: Announcement[];
@@ -218,7 +219,8 @@ export default function AnnouncementRotator(props: Props) {
                   {(item) => (
                     <a
                       href={item.link || "#"}
-                      target="_blank"
+                      target={getTarget(item.link)}
+                      rel={getRel(item.link)}
                       class="group/item relative w-full inline-flex items-center pl-5 pr-12 py-2 rounded-full border border-bg-2 bg-bg-1/95 backdrop-blur-sm hover:border-fg-1 hover:bg-bg-1 text-xs md:text-sm font-medium font-sans text-fg-0 transition-all duration-200  overflow-hidden"
                     >
                       <div class="relative px-2 overflow-hidden flex-1 min-w-0">

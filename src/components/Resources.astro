@@ -1,5 +1,6 @@
 ---
 import type { Resource } from "../types";
+import { getTarget, getRel } from "../lib/link-utils";
 
 interface Props {
   title: string;
@@ -87,7 +88,7 @@ const formatDate = (dateStr: string | null) => {
                                {resource.metadata.authors.map((author, index) => (
                                  <span>
                                    {author.link ? (
-                                     <a href={author.link} target="_blank" rel="noopener noreferrer" class="font-medium text-fg-0 hover:text-primary transition-colors border-b border-transparent hover:border-primary relative z-20">
+                                     <a href={author.link} target={getTarget(author.link)} rel={getRel(author.link)} class="font-medium text-fg-0 hover:text-primary transition-colors border-b border-transparent hover:border-primary relative z-20">
                                        {author.name}
                                      </a>
                                    ) : (
@@ -108,7 +109,7 @@ const formatDate = (dateStr: string | null) => {
                                {resource.metadata.publishers.map((publisher, index) => (
                                  <span>
                                    {publisher.link ? (
-                                     <a href={publisher.link} target="_blank" rel="noopener noreferrer" class="font-medium text-fg-0 hover:text-primary transition-colors border-b border-transparent hover:border-primary relative z-20">
+                                     <a href={publisher.link} target={getTarget(publisher.link)} rel={getRel(publisher.link)} class="font-medium text-fg-0 hover:text-primary transition-colors border-b border-transparent hover:border-primary relative z-20">
                                        {publisher.name}
                                      </a>
                                    ) : (
@@ -142,8 +143,8 @@ const formatDate = (dateStr: string | null) => {
 
                       <a
                         href={resource.link || "#"}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        target={getTarget(resource.link)}
+                        rel={getRel(resource.link)}
                         class="mt-2 w-max relative group/btn flex items-center text-primary font-bold text-sm gap-2 cursor-pointer"
                       >
                         <span>{resource.button_text || "View Details"}</span>

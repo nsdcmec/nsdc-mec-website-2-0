@@ -8,6 +8,7 @@ import {
   createEffect,
 } from "solid-js";
 import type { TeamMember } from "../types";
+import { getTarget, getRel } from "../lib/link-utils";
 
 interface TeamListProps {
   members: TeamMember[];
@@ -399,8 +400,8 @@ export default function TeamList(props: TeamListProps) {
                                         {(link) => (
                                           <a
                                             href={link.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
+                                            target={getTarget(link.url)}
+                                            rel={getRel(link.url)}
                                             class="relative group py-1 text-[10px] font-bold font-mono uppercase tracking-widest text-fg-1 hover:text-fg-0 transition-colors"
                                           >
                                             <span>{link.name}</span>

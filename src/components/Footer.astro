@@ -1,6 +1,7 @@
 ---
 import ThemeToggle from "./ThemeToggle.astro";
 import type { Link } from "../types";
+import { getTarget, getRel } from "../lib/link-utils";
 
 interface Props {
   links: Link[];
@@ -54,8 +55,8 @@ const groupedLinks = Object.entries(groups)
               {column.links.map((link) => (
                 <a
                   href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  target={getTarget(link.url)}
+                  rel={getRel(link.url)}
                   class="relative w-fit group text-fg-1 hover:text-fg-0 transition-colors duration-300 font-sans"
                   title={link.label}
                 >

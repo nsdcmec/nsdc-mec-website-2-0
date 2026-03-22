@@ -10,6 +10,7 @@ import {
 import type { Event } from "../types";
 import { parseEventDate } from "../lib/date-utils";
 import { slugify } from "../lib/slugify";
+import { getTarget, getRel } from "../lib/link-utils";
 import Dropdown from "./ui/Dropdown";
 
 interface Props {
@@ -41,20 +42,38 @@ export default function EventsIsland(props: Props) {
     });
   };
 
+  const formatTime = (dateStr: string | null) => {
+    if (!dateStr || (!dateStr.includes(":") && !dateStr.includes("T")))
+      return null;
+    const ts = parseEventDate(dateStr);
+    if (ts === 0) return null;
+    return new Date(ts).toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
   const processedData = createMemo(() => {
     const now = new Date().getTime();
     const oneYearAgo = now - 365 * 24 * 60 * 60 * 1000;
 
     const mappedEvents = props.events.map((e) => {
       const ts = parseEventDate(e.date);
+      const meta = e.metadata || {};
+      const hero = meta.hero_config;
+      const startTs = hero?.start_date ? parseEventDate(hero.start_date) : ts;
+      const endTs = hero?.end_date ? parseEventDate(hero.end_date) : 0;
+
       let status = "past";
-      if (ts >= now) {
+      if (endTs > 0 && now >= startTs && now <= endTs) {
+        status = "happening";
+      } else if (startTs >= now) {
         status = "upcoming";
-      } else if (ts >= oneYearAgo) {
+      } else if (startTs >= oneYearAgo) {
         status = "recent";
       }
 
-      const meta = e.metadata || {};
       const hasDetails = !!(
         (meta.rounds && meta.rounds.length > 0) ||
         (meta.prizes && meta.prizes.length > 0) ||
@@ -63,7 +82,7 @@ export default function EventsIsland(props: Props) {
         (meta.collaborators && meta.collaborators.length > 0)
       );
 
-      return { ...e, computedStatus: status, ts, hasDetails };
+      return { ...e, computedStatus: status, ts: startTs, hasDetails };
     });
 
     let filtered = mappedEvents;
@@ -95,8 +114,8 @@ export default function EventsIsland(props: Props) {
 
   const groupOrder = createMemo(() => {
     return sort() === "newest"
-      ? ["upcoming", "recent", "past"]
-      : ["past", "recent", "upcoming"];
+      ? ["happening", "upcoming", "recent", "past"]
+      : ["past", "recent", "upcoming", "happening"];
   });
 
   const activeItem = () =>
@@ -207,12 +226,12 @@ export default function EventsIsland(props: Props) {
     let lastScrollY = window.scrollY;
     const handleWindowScroll = () => {
       if (props.isMinimal) return;
-      
+
       const scrollY = window.scrollY;
       const isAtTop = scrollY <= 5;
       const isScrollingDown = scrollY > lastScrollY;
       const scrollDiff = Math.abs(scrollY - lastScrollY);
-      
+
       const timeSinceManual = Date.now() - manualToggleTime;
       // If we just manually toggled, ignore scroll for 600ms to allow layout adjustment
       if (timeSinceManual < 600) {
@@ -319,6 +338,7 @@ export default function EventsIsland(props: Props) {
                   <Dropdown
                     options={[
                       { id: "all", label: "All" },
+                      { id: "happening", label: "Happening Now" },
                       { id: "upcoming", label: "Upcoming" },
                       { id: "recent", label: "Recent" },
                       { id: "past", label: "Past" },
@@ -436,6 +456,7 @@ export default function EventsIsland(props: Props) {
                       <Dropdown
                         options={[
                           { id: "all", label: "All Events" },
+                          { id: "happening", label: "Happening Now" },
                           { id: "upcoming", label: "Upcoming" },
                           { id: "recent", label: "Recent" },
                           { id: "past", label: "Past" },
@@ -490,7 +511,7 @@ export default function EventsIsland(props: Props) {
                           <Show when={items().length > 0}>
                             <li>
                               <div class="py-1 pl-4 border-l-2 border-transparent -ml-[2px] text-[10px] font-bold uppercase tracking-[0.2em] text-fg-1/70 mb-2">
-                                {group}
+                                {group === "happening" ? "Happening Now" : group}
                               </div>
                               <ul class="flex flex-col">
                                 <For each={items()}>
@@ -571,7 +592,7 @@ export default function EventsIsland(props: Props) {
                             <div class="md:sticky  md:top-10 z-30 bg-bg-0 py-2">
                               <div class="flex items-center gap-4 border-b-2 border-fg-0/10">
                                 <h2 class="text-2xl font-bold uppercase tracking-widest text-fg-0 pb-2">
-                                  {group}
+                                  {group === "happening" ? "Happening Now" : group}
                                 </h2>
                               </div>
                             </div>
@@ -591,9 +612,13 @@ export default function EventsIsland(props: Props) {
 
                                 return (
                                   <div
-                                    class={`event-section-item flex flex-col border-1 border-fg-0/40 rounded w-full relative mb-4 md:mb-6 z-10 transition-all overflow-hidden ${isPast ? "opacity-90 grayscale-[15%]" : ""} bg-bg-0`}
+                                    class={`event-section-item flex flex-col border-1 border-fg-0/40 rounded w-full relative mb-4 md:mb-6 z-10 transition-all overflow-hidden ${isPast ? "opacity-90 grayscale-[15%]" : ""} bg-bg-0 hover:border-primary/50 group/card cursor-pointer`}
                                     id={`event-${event.id}`}
                                     data-index={index()}
+                                    onClick={(e) => {
+                                      if (event.custom_html || (e.target as HTMLElement).closest("a")) return;
+                                      window.location.href = `/event/${slugify(event.title)}`;
+                                    }}
                                   >
                                     <Show
                                       when={!event.custom_html}
@@ -629,15 +654,21 @@ export default function EventsIsland(props: Props) {
                                             <img
                                               src={event.image_url as string}
                                               alt={event.title}
-                                              class="w-full h-full transition-transform duration-700"
+                                              class="w-full h-full transition-transform duration-700 group-hover/card:scale-105"
                                             />
                                           </Show>
                                         </div>
 
                                         <div class="flex flex-col p-4 md:p-6">
                                           <div class="flex items-center md:gap-3 md:mb-6 gap-2 mb-4 flex-wrap">
+                                            <Show when={event.computedStatus === "happening"}>
+                                              <span class="text-[9px] font-bold bg-primary text-primary-fg px-2 py-0.5 rounded-sm uppercase tracking-wider">
+                                                Happening Now
+                                              </span>
+                                              <span class="w-[4px] h-[4px] bg-fg-0/20 rounded-full"></span>
+                                            </Show>
                                             <span
-                                              class={`text-xs font-mono font-bold uppercase md:tracking-widest ${event.computedStatus === "upcoming" ? "text-primary" : "text-fg-1"}`}
+                                              class={`text-xs font-mono font-bold uppercase md:tracking-widest ${["upcoming", "happening"].includes(event.computedStatus) ? "text-primary" : "text-fg-1"}`}
                                             >
                                               {formatDate(event.date)}
                                             </span>
@@ -659,22 +690,39 @@ export default function EventsIsland(props: Props) {
                                           </h3>
 
                                           <Show when={event.description}>
-                                            <p class="text-sm md:text-base text-fg-1 font-sans mb-4  md:mb-8 line-clamp-4 opacity-90">
-                                              {event.description}
-                                            </p>
+                                            <div class="mb-4 md:mb-8">
+                                              <p class="text-sm md:text-base text-fg-1 font-sans line-clamp-4 opacity-90">
+                                                {event.description}
+                                              </p>
+                                              {formatTime(event.date) && (
+                                                <p class="text-[10px] md:text-xs font-mono font-bold text-primary uppercase tracking-widest mt-2 flex items-center gap-1.5">
+                                                  time: {formatTime(event.date)}
+                                                </p>
+                                              )}
+                                            </div>
                                           </Show>
 
-                                          <div class="flex gap-4 mt-auto border-t-2 border-fg-0/10 pt-2">
+                                          <div class="flex gap-4 mt-auto border-t-2 border-fg-0/10 pt-2 flex-wrap">
                                             <a
                                               href={`/event/${slugify(event.title)}`}
                                               class="relative group text-xs font-bold uppercase tracking-widest text-fg-0 hover:text-primary transition-colors py-2"
                                             >
-                                              <span>
-                                                {event.button_text ||
-                                                  "View Details"}
-                                              </span>
-                                              <span class="absolute bottom-0 right-0 h-[2px] w-full bg-primary transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover:scale-x-100 group-hover:origin-left" />
+                                              <span>View Details</span>
+                                              <span class="absolute bottom-0 right-0 h-[2px] w-full bg-primary transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover/card:scale-x-100 group-hover/card:origin-left" />
                                             </a>
+                                            <For each={event.metadata?.extra_links || []}>
+                                              {(extra) => (
+                                                <a
+                                                  href={extra.link}
+                                                  target={getTarget(extra.link)}
+                                                  rel={getRel(extra.link)}
+                                                  class="relative group text-xs font-bold uppercase tracking-widest text-primary hover:text-fg-0 transition-colors py-2 pl-4 border-l-2 border-bg-2"
+                                                >
+                                                  <span>{extra.title}</span>
+                                                  <span class="absolute bottom-0 right-0 h-[2px] w-full bg-fg-0 transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover:scale-x-100 group-hover:origin-left" />
+                                                </a>
+                                              )}
+                                            </For>
                                             <Show when={event.report_url}>
                                               <a
                                                 href={`/report/${slugify(event.title)}`}

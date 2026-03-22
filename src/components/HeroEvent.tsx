@@ -13,6 +13,7 @@ import type {
   HeroStateConfig,
 } from "../types";
 import { parseEventDate } from "../lib/date-utils";
+import { getTarget, getRel } from "../lib/link-utils";
 
 interface Props {
   event: Event;
@@ -82,6 +83,17 @@ export default function HeroEvent(props: Props) {
     return config.after_config;
   });
 
+  const buttonText = createMemo(() => {
+    const conf = activeConfig();
+    const s = state();
+    if (conf?.buttontext) return conf.buttontext;
+    return s === "upcoming"
+      ? "Register Now"
+      : s === "ongoing"
+        ? "Join Now"
+        : "Check it out";
+  });
+
   const currentLink = createMemo(() => {
     const conf = activeConfig();
     const s = state();
@@ -98,7 +110,9 @@ export default function HeroEvent(props: Props) {
     const conf = activeConfig();
 
     // 1. Try state specific BG
-    if (conf?.bg) return conf.bg;
+    if (conf?.bg?.type) {
+      return conf.bg;
+    }
 
     // 2. Try generic hero BG config
     if (config.bg_value) {
@@ -174,9 +188,6 @@ export default function HeroEvent(props: Props) {
                   ? "Live Now"
                   : "Event Ended"}
             </span>
-            {state() === "ended" && (
-              <span class="text-xs text-fg-1">Check out the report!</span>
-            )}
           </div>
 
           {/* Title */}
@@ -226,23 +237,18 @@ export default function HeroEvent(props: Props) {
           </Show>
 
           <Show when={state() === "ongoing"}>
-            <p class="text-fg-1 font-sans text-lg">
-              Happening right now! Don't miss out.
-            </p>
+            <p class="text-fg-1 font-sans text-lg">Happening now!</p>
           </Show>
 
           {/* Action Button */}
           <Show when={currentLink() !== undefined}>
             <a
-              href={currentLink()}
-              target="_blank"
+              href={currentLink()!}
+              target={getTarget(currentLink())}
+              rel={getRel(currentLink())}
               class="w-fit mt-2 px-6 py-3 bg-fg-0 text-bg-0 font-bold font-sans hover:opacity-90 transition-opacity pointer-events-auto"
             >
-              {state() === "upcoming"
-                ? "Register Now"
-                : state() === "ongoing"
-                  ? "Join Now"
-                  : "View Highlights"}
+              {buttonText()}
             </a>
           </Show>
         </div>

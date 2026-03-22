@@ -55,6 +55,7 @@ export interface BgConfig {
 export interface HeroStateConfig {
   bg?: BgConfig;
   link?: string;
+  buttontext?: string;
   hide_details?: boolean;
 }
 
@@ -77,6 +78,11 @@ export interface HeroEventConfig {
   after_config?: HeroStateConfig;
 }
 
+export interface ExtraLink {
+  title: string;
+  link: string;
+}
+
 export interface EventMetadata {
   collaborators?: Collaborator[];
   prizes?: Prize[];
@@ -84,6 +90,7 @@ export interface EventMetadata {
   contacts?: Contact[];
   fees?: Fee[];
   hero_config?: HeroEventConfig;
+  extra_links?: ExtraLink[];
 }
 
 export interface Event {

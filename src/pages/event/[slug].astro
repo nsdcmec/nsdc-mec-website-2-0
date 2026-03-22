@@ -3,6 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import { dataService } from "../../lib/data-service";
 import { parseEventDate } from "../../lib/date-utils";
 import { slugify } from "../../lib/slugify";
+import { getTarget, getRel } from "../../lib/link-utils";
 
 const { slug } = Astro.params;
 const data = await dataService.getInitialData();
@@ -27,6 +28,18 @@ const formattedDate = (() => {
   });
 })();
 
+const formattedTime = (() => {
+  if (!event.date || (!event.date.includes(":") && !event.date.includes("T")))
+    return null;
+  const ts = parseEventDate(event.date);
+  if (ts === 0) return null;
+  return new Date(ts).toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+})();
+
 const meta = event.metadata || {};
 
 const currentStatus = (() => {
@@ -34,15 +47,17 @@ const currentStatus = (() => {
   const now = new Date().getTime();
   const oneYearAgo = now - 365 * 24 * 60 * 60 * 1000;
 
-  // REMOVED: hero_config.start_date override. 
-  // Status should be determined by actual event date.
-  
-  if (ts >= now) return "upcoming";
+  const meta = event.metadata || {};
+  const hero = meta.hero_config;
+  const startTs = hero?.start_date ? parseEventDate(hero.start_date) : ts;
+  const endTs = hero?.end_date ? parseEventDate(hero.end_date) : 0;
+
+  if (endTs > 0 && now >= startTs && now <= endTs) return "happening";
+  if (startTs >= now) return "upcoming";
   if (ts >= oneYearAgo) return "recent";
   return "past";
-})();
----
-
+  })();
+  ---
 <Layout
   title={event.title}
   links={data.links}
@@ -66,13 +81,23 @@ const currentStatus = (() => {
         {event.title}
       </h1>
       <div class="flex items-start gap-3 mt-0.5">
-        <span class={`px-2 py-1 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] border-2 border-fg-0 shrink-0 ${currentStatus === "upcoming" ? "bg-primary text-primary-fg border-primary" : "bg-bg-0 text-fg-0"}`}>
-          {currentStatus}
+        <span class={`px-2 py-1 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] border-2 border-fg-0 shrink-0 ${["upcoming", "happening"].includes(currentStatus) ? "bg-primary text-primary-fg border-primary" : "bg-bg-0 text-fg-0"}`}>
+          {currentStatus === "happening" ? "Happening Now" : currentStatus}
         </span>
         <div class="flex flex-col gap-0.5 pt-[1px]">
+        <div>
           <span class="text-[10px] md:text-xs font-mono font-bold text-fg-1 uppercase tracking-widest">
             {formattedDate}
           </span>
+{
+              formattedTime && (
+<span class="text-[10px] md:text-xs font-mono font-bold text-fg-1 uppercase tracking-widest">
+            , {formattedTime}
+          </span>
+                
+              )
+            }
+</div>
           {event.venue && (
             <span class="text-[10px] md:text-xs font-mono font-bold text-fg-1 uppercase tracking-widest leading-tight">
               {event.venue}
@@ -83,13 +108,29 @@ const currentStatus = (() => {
       {currentStatus !== "past" && event.link && (
         <a
           href={event.link}
-          target="_blank"
-          rel="noopener noreferrer"
+          target={getTarget(event.link)}
+          rel={getRel(event.link)}
           class="block w-full py-2.5 mt-1 text-center text-xs font-bold uppercase tracking-widest bg-primary text-primary-fg hover:bg-fg-0 hover:text-bg-0 transition-colors border-2 border-primary hover:border-fg-0"
         >
-          {event.button_text || "Register Now"}
+           Register Now
         </a>
       )}
+      {
+        meta.extra_links && meta.extra_links.length > 0 && (
+          <div class="flex flex-col gap-1.5">
+            {meta.extra_links.map((extra) => (
+              <a
+                href={extra.link}
+                target={getTarget(extra.link)}
+                rel={getRel(extra.link)}
+                class="block w-full py-2 text-center text-[10px] font-bold uppercase tracking-widest border-2 border-fg-0 text-fg-0 hover:bg-fg-0 hover:text-bg-0 transition-all"
+              >
+                {extra.title}
+              </a>
+            ))}
+          </div>
+        )
+      }
     </div>
 
     <div class="container mx-auto px-4 md:px-6  mt-6 md:mt-16">
@@ -120,9 +161,9 @@ const currentStatus = (() => {
 
           <div class="flex flex-wrap gap-2 items-center">
             <span
-              class={`px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em] border-2 border-fg-0 ${currentStatus === "upcoming" ? "bg-primary text-primary-fg border-primary" : "bg-bg-0 text-fg-0"}`}
+              class={`px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em] border-2 border-fg-0 ${["upcoming", "happening"].includes(currentStatus) ? "bg-primary text-primary-fg border-primary" : "bg-bg-0 text-fg-0"}`}
             >
-              {currentStatus}
+              {currentStatus === "happening" ? "Happening Now" : currentStatus}
             </span>
             {
               event.event_type && (
@@ -146,6 +187,22 @@ const currentStatus = (() => {
                 {formattedDate}
               </span>
             </div>
+{
+              formattedTime && (
+<div class="flex flex-col">
+              <span
+                class="text-[9px] font-mono font-bold text-fg-1 uppercase tracking-widest mb-0.5 md:mb-1"
+              >
+               Time 
+              </span>
+              <span
+                class=" font-bold text-fg-0 uppercase tracking-tight"
+              >
+                {formattedTime}
+              </span>
+            </div>
+              )
+            }
 
             {
               event.venue && (
@@ -226,12 +283,30 @@ const currentStatus = (() => {
                 currentStatus !== "past" && event.link && (
                   <a
                     href={event.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="block w-full py-3 md:py-4 text-center text-sm font-bold uppercase tracking-widest bg-primary text-primary-fg hover:bg-fg-0 hover:text-bg-0 transition-colors border-2 border-primary hover:border-fg-0"
+                    target={getTarget(event.link)}
+                    rel={getRel(event.link)}
+                    class="block w-full py-3 md:py-4 text-center text-sm font-bold uppercase tracking-widest bg-primary text-primary-fg hover:bg-fg-0 hover:text-bg-0 transition-colors border-2 border-primary hover:border-fg-0 mb-4"
                   >
                     {event.button_text || "Register Now"}
                   </a>
+                )
+              }
+
+              {/* Extra Links */}
+              {
+                meta.extra_links && meta.extra_links.length > 0 && (
+                  <div class="flex flex-col gap-2">
+                    {meta.extra_links.map((extra) => (
+                      <a
+                        href={extra.link}
+                        target={getTarget(extra.link)}
+                        rel={getRel(extra.link)}
+                        class="block w-full py-2.5 text-center text-xs font-bold uppercase tracking-widest border-2 border-fg-0 text-fg-0 hover:bg-fg-0 hover:text-bg-0 transition-all"
+                      >
+                        {extra.title}
+                      </a>
+                    ))}
+                  </div>
                 )
               }
             </div>
@@ -453,23 +528,36 @@ const currentStatus = (() => {
               <h2 class="text-2xl font-bold uppercase tracking-tighter text-fg-0 border-b-2 border-fg-0 pb-2">
                 In Collaboration With
               </h2>
-              <div class="flex flex-wrap gap-8 md:gap-12 items-center">
-                {meta.collaborators.map((collab) => (
-                  <div class="flex items-center gap-3 md:gap-4">
-                    {collab.img && (
-                      <img
-                        src={collab.img}
-                        alt={collab.name}
-                        class="h-12 md:h-16 w-auto object-contain"
-                      />
-                    )}
-                    {!collab.img && (
-                      <span class="font-bold uppercase tracking-widest text-fg-0 text-sm md:text-base">
-                        {collab.name}
-                      </span>
-                    )}
-                  </div>
-                ))}
+              <div class="flex flex-wrap gap-x-12 gap-y-8 items-start">
+                {meta.collaborators.map((collab) => {
+                  const Container = collab.link ? 'a' : 'div';
+                  return (
+                    <Container
+                      href={collab.link}
+                      target={getTarget(collab.link)}
+                      rel={getRel(collab.link)}
+                      class="flex flex-col gap-3"
+                    >
+                      {collab.img && (
+                        <img
+                          src={collab.img}
+                          alt={collab.name}
+                          class="h-12 md:h-16 w-auto object-contain object-left"
+                        />
+                      )}
+                      <div class="flex flex-col">
+                        <span class="font-bold uppercase tracking-widest text-fg-0 text-sm">
+                          {collab.name}
+                        </span>
+                        {collab.desc && (
+                          <p class="text-[11px] text-fg-1 leading-tight mt-1 max-w-[180px]">
+                            {collab.desc}
+                          </p>
+                        )}
+                      </div>
+                    </Container>
+                  );
+                })}
               </div>
             </section>
           )

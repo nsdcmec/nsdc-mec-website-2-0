@@ -3,6 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import { dataService } from "../../lib/data-service";
 import { parseEventDate } from "../../lib/date-utils";
 import { slugify } from "../../lib/slugify";
+import { getTarget, getRel } from "../../lib/link-utils";
 
 const { slug } = Astro.params;
 const data = await dataService.getInitialData();
@@ -86,7 +87,8 @@ const formattedDate = (() => {
             <a
               href={event.report_url}
               download={`${event.title.replace(/\s+/g, "_")}_Report.pdf`}
-              target="_blank"
+              target={getTarget(event.report_url)}
+              rel={getRel(event.report_url)}
               class="w-full py-4 text-center text-xs font-bold uppercase tracking-widest bg-primary text-primary-fg hover:bg-fg-0 hover:text-bg-0 transition-colors border-2 border-primary hover:border-fg-0 flex items-center justify-center gap-2"
             >
               <svg
