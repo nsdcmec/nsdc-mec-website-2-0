@@ -53,15 +53,23 @@ export default function HeroAnimation(props: HeroAnimationProps) {
     };
 
     let variant = props.variant || "constellation";
+    const variants: AnimationVariant[] = [
+      "constellation",
+      "data-stream",
+      "topographical-matrix",
+    ];
     if (variant === "random") {
-      const variants: AnimationVariant[] = [
-        "constellation",
-        "data-stream",
-        "topographical-matrix",
-      ];
       variant = variants[Math.floor(Math.random() * variants.length)];
-    }
+    } else if (variant === "daily") {
+      const now = new Date();
+      const start = new Date(now.getFullYear(), 0, 0);
+      const diff = now.getTime() - start.getTime();
+      const oneDay = 1000 * 60 * 60 * 24;
 
+      const dayOfYear = Math.floor(diff / oneDay);
+
+      variant = variants[dayOfYear % variants.length];
+    }
     // ─────────────────────────────────────────────
     // VARIANT 1: CONSTELLATION (Original)
     // ─────────────────────────────────────────────

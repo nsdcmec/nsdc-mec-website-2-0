@@ -179,7 +179,8 @@ export type AnimationVariant =
   | "constellation"
   | "data-stream"
   | "topographical-matrix"
-  | "random";
+  | "random"
+  | "daily";
 
 export interface HeroMainConfig {
   type: "img" | "video" | "iframe" | "animation" | "none";
