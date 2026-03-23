@@ -173,6 +173,8 @@ const formattedDate = event
       links={initialData.links}
       injections={initialData.config.injections}
       colors={initialData.config.colors}
+      image={event?.image_url}
+      description={event?.description}
     >
       {isEventRegistration && event ? (
         <div class="container mx-auto px-4 md:px-6 mt-6 md:mt-16 pb-12">

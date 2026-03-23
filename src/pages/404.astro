@@ -21,18 +21,21 @@ const injections = config.injections;
   links={[]}
   injections={injections}
   colors={colors}
+  description="Page Not Found"
+  image="/404.webp"
 >
   <style is:inline>
     /* Force hide header and footer for this specific page */
-    [transition-persist="header"], 
-    header, 
+    [transition-persist="header"],
+    header,
     footer,
     #top-injection-banner {
       display: none !important;
     }
-    
+
     /* Prevent scrolling */
-    html, body {
+    html,
+    body {
       overflow: hidden !important;
       height: 100% !important;
     }
@@ -45,33 +48,40 @@ const injections = config.injections;
     </div>
 
     <!-- Main Content Layer -->
-    <div class="relative z-10 flex-grow flex flex-col items-center justify-center text-center px-4">
+    <div
+      class="relative z-10 flex-grow flex flex-col items-center justify-center text-center px-4"
+    >
       <div class="max-w-5xl mx-auto w-full flex flex-col items-center">
-        
         <!-- Large 404 Text -->
         <div class="mb-4">
-            <span class="text-[10rem] md:text-[15rem] font-black tracking-tighter text-fg-0 font-sans leading-none uppercase opacity-20">
-                404
-            </span>
+          <span
+            class="text-[10rem] md:text-[15rem] font-black tracking-tighter text-fg-0 font-sans leading-none uppercase opacity-20"
+          >
+            404
+          </span>
         </div>
 
         <div class="flex flex-col items-center -mt-20 md:-mt-32">
-            <!-- Main Title - Matches Hero Style -->
-            <h1 class="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-black tracking-tighter text-fg-0 font-sans leading-[0.95] mb-6 uppercase">
-              {config.hero.title || "NSDC MEC"}
-            </h1>
+          <!-- Main Title - Matches Hero Style -->
+          <h1
+            class="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-black tracking-tighter text-fg-0 font-sans leading-[0.95] mb-6 uppercase"
+          >
+            {config.hero.title || "NSDC MEC"}
+          </h1>
 
-            <h2 class="text-xl sm:text-2xl md:text-3xl text-fg-1 font-medium tracking-tight mb-12">
-              Page Not Found
-            </h2>
+          <h2
+            class="text-xl sm:text-2xl md:text-3xl text-fg-1 font-medium tracking-tight mb-12"
+          >
+            Page Not Found
+          </h2>
 
-            <!-- Return Home - Sharp Pill Button -->
-            <a 
-              href="/" 
-              class="px-12 py-4 bg-primary text-primary-fg font-bold font-sans text-xs uppercase tracking-[0.3em] hover:opacity-90 transition-all duration-300 rounded-full"
-            >
-              Return Home
-            </a>
+          <!-- Return Home - Sharp Pill Button -->
+          <a
+            href="/"
+            class="px-12 py-4 bg-primary text-primary-fg font-bold font-sans text-xs uppercase tracking-[0.3em] hover:opacity-90 transition-all duration-300 rounded-full"
+          >
+            Return Home
+          </a>
         </div>
       </div>
     </div>
