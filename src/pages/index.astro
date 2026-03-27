@@ -10,21 +10,21 @@ import TeamCarousel from "../components/TeamCarousel";
 
 const data = await dataService.getInitialData();
 if (!data) {
-	throw new Error("Failed to load initial data for the homepage.");
+  throw new Error("Failed to load initial data for the homepage.");
 }
 
 const heroSlot = data.config.injections.hero_slot;
 const showHeroSlot =
-	typeof heroSlot === "string"
-		? !!heroSlot
-		: heroSlot?.is_active && heroSlot?.html;
+  typeof heroSlot === "string"
+    ? !!heroSlot
+    : heroSlot?.is_active && heroSlot?.html;
 
 // Filter potential hero events (server just checks 'show_in_hero')
 // The client will decide which one is ACTIVE based on time
 const potentialHeroEvents = data.events.filter((e) => {
-	const meta = e.metadata?.hero_config as HeroEventConfig | undefined;
-	return meta && meta.show_in_hero;
-	//TODO update it such taht it only inclused past events
+  const meta = e.metadata?.hero_config as HeroEventConfig | undefined;
+  return meta && meta.show_in_hero;
+  //TODO update it such taht it only inclused past events
 });
 ---
 
@@ -33,6 +33,7 @@ const potentialHeroEvents = data.events.filter((e) => {
   links={data.links}
   injections={data.config.injections}
   colors={data.config.colors}
+  defaultTheme={data.config.theme}
 >
   <Hero
     config={data.config.hero}

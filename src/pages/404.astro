@@ -11,6 +11,7 @@ if (!data) {
 const { config } = data;
 const colors = config.colors;
 const injections = config.injections;
+const theme = config.theme;
 
 // We pass empty links to avoid header/footer rendering if the Layout depends on them,
 // but since we want to hide them completely, we will handle that via CSS or layout slots.
@@ -23,6 +24,7 @@ const injections = config.injections;
   colors={colors}
   description="Page Not Found"
   image="/404.webp"
+  defaultTheme={theme}
 >
   <style is:inline>
     /* Force hide header and footer for this specific page */

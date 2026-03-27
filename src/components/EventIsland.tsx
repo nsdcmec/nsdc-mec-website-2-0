@@ -8,7 +8,7 @@ import {
   createEffect,
 } from "solid-js";
 import type { Event } from "../types";
-import { parseEventDate } from "../lib/date-utils";
+import { parseEventDate, formatDate } from "../lib/date-utils";
 import { slugify } from "../lib/slugify";
 import { getTarget, getRel } from "../lib/link-utils";
 import Dropdown from "./ui/Dropdown";
@@ -29,17 +29,6 @@ export default function EventsIsland(props: Props) {
   const toggleMobileFilters = () => {
     setShowMobileFilters(!showMobileFilters());
     manualToggleTime = Date.now();
-  };
-
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return "TBA";
-    const ts = parseEventDate(dateStr);
-    if (ts === 0) return dateStr;
-    return new Date(ts).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
   };
 
   const formatTime = (dateStr: string | null) => {
@@ -667,11 +656,13 @@ export default function EventsIsland(props: Props) {
                                               </span>
                                               <span class="w-[4px] h-[4px] bg-fg-0/20 rounded-full"></span>
                                             </Show>
-                                            <span
-                                              class={`text-xs font-mono font-bold uppercase md:tracking-widest ${["upcoming", "happening"].includes(event.computedStatus) ? "text-primary" : "text-fg-1"}`}
-                                            >
-                                              {formatDate(event.date)}
-                                            </span>
+                                            <Show when={formatDate(event.date)}>
+                                              <span
+                                                class={`text-xs font-mono font-bold uppercase md:tracking-widest ${["upcoming", "happening"].includes(event.computedStatus) ? "text-primary" : "text-fg-1"}`}
+                                              >
+                                                {formatDate(event.date)}
+                                              </span>
+                                            </Show>
                                             <span class="w-[4px] h-[4px] bg-fg-0/20 rounded-full"></span>
                                             {event.venue && (
                                               <span class="text-xs font-mono font-bold text-fg-1 uppercase md:tracking-widest">

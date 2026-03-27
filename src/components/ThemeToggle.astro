@@ -1,8 +1,10 @@
 ---
-
+import { dataService } from "../lib/data-service";
+const data = await dataService.getInitialData();
+const defaultTheme = data.config.theme || "light";
 ---
 
-<theme-toggle>
+<theme-toggle data-default-theme={defaultTheme}>
   <div class="flex items-center">
     <button
       id="theme-btn-light"
@@ -89,7 +91,8 @@
         newBtn.addEventListener("click", () => this.setTheme(theme));
       });
 
-      const currentTheme = localStorage.getItem("theme") || "system";
+      const defaultTheme = this.dataset.defaultTheme || "light";
+      const currentTheme = localStorage.getItem("theme") || defaultTheme;
       this.updateActiveButton(currentTheme);
     }
 
@@ -102,8 +105,13 @@
         localStorage.setItem("theme", theme);
       } else {
         localStorage.removeItem("theme");
-        if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-          root.classList.add("dark");
+        if (theme === "system") {
+          if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+            root.classList.add("dark");
+          } else {
+            // If system is light, but default is dark? 
+            // Wait, if theme is system, we follow system.
+          }
         }
       }
 

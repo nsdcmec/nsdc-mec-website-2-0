@@ -259,7 +259,7 @@ export interface Resource {
   date: string | null;
   priority: number;
   resource_type: string;
-  status: "active" | "archived" | "upcoming";
+  status: "active" | "archived" ;
   tags: string[];
   button_text?: string;
   metadata: ResourceMetadata;

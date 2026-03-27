@@ -3,7 +3,7 @@
 import Layout from "../layouts/Layout.astro";
 import IframeLayout from "../layouts/IframeLayout.astro";
 import { dataService } from "../lib/data-service";
-import { parseEventDate } from "../lib/date-utils";
+import { parseEventDate, formatDate } from "../lib/date-utils";
 import { slugify } from "../lib/slugify";
 import ResourcesComponent from "../components/Resources.astro";
 import type { Resource } from "../types";
@@ -67,6 +67,15 @@ if (route.type === "resource-page") {
     {} as Record<string, Resource[]>,
   );
 
+  // Sort each group by date (newest first)
+  Object.keys(groupedResources).forEach((type) => {
+    groupedResources[type].sort((a, b) => {
+      const dateA = parseEventDate(a.date);
+      const dateB = parseEventDate(b.date);
+      return dateB - dateA;
+    });
+  });
+
   const predefinedOrder = ["project", "research", "publication", "resource"];
   sortedTypes = Object.keys(groupedResources).sort((a, b) => {
     const idxA = predefinedOrder.indexOf(a.toLowerCase());
@@ -115,18 +124,7 @@ const event =
     ? initialData.events.find((e) => e.id.toString() === eventId.toString())
     : null;
 
-const formattedDate = event
-  ? (() => {
-      if (!event.date) return "TBA";
-      const ts = parseEventDate(event.date);
-      if (ts === 0) return event.date;
-      return new Date(ts).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      });
-    })()
-  : null;
+const formattedDate = event ? formatDate(event.date) : null;
 ---
 
 {
@@ -136,6 +134,7 @@ const formattedDate = event
       links={initialData.links}
       injections={initialData.config.injections}
       colors={initialData.config.colors}
+      defaultTheme={initialData.config.theme}
     >
       <div class=" bg-bg-0 min-h-screen">
         {sortedTypes.map((type) => {
@@ -175,6 +174,7 @@ const formattedDate = event
       colors={initialData.config.colors}
       image={event?.image_url}
       description={event?.description}
+      defaultTheme={initialData.config.theme}
     >
       {isEventRegistration && event ? (
         <div class="container mx-auto px-4 md:px-6 mt-6 md:mt-16 pb-12">
@@ -186,14 +186,16 @@ const formattedDate = event
               </h1>
 
               <div class="flex flex-col gap-3 md:gap-4 border-l-2 border-fg-0 pl-4 py-1">
-                <div class="flex flex-col">
-                  <span class="text-[9px] font-mono font-bold text-fg-1 uppercase tracking-widest mb-0.5">
-                    Event Date
-                  </span>
-                  <span class="font-bold text-fg-0 uppercase tracking-tight">
-                    {formattedDate}
-                  </span>
-                </div>
+                {formattedDate && (
+                  <div class="flex flex-col">
+                    <span class="text-[9px] font-mono font-bold text-fg-1 uppercase tracking-widest mb-0.5">
+                      Event Date
+                    </span>
+                    <span class="font-bold text-fg-0 uppercase tracking-tight">
+                      {formattedDate}
+                    </span>
+                  </div>
+                )}
 
                 {event.venue && (
                   <div class="flex flex-col">

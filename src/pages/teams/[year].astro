@@ -27,11 +27,25 @@ const allYears = data.teams.map((t: TeamYear) => ({
   links={data.links}
   injections={data.config.injections}
   colors={data.config.colors}
+  defaultTheme={data.config.theme}
+  description={`${currentTeam.year} Team | NSDC MEC`}
 >
   {/* Preload first two images for LCP optimization */}
-  {currentTeam.members.slice(0, 2).map(m => m.image_url && (
-    <link rel="preload" href={m.image_url as string} as="image" slot="head" />
-  ))}
+  {
+    currentTeam.members
+      .slice(0, 2)
+      .map(
+        (m) =>
+          m.image_url && (
+            <link
+              rel="preload"
+              href={m.image_url as string}
+              as="image"
+              slot="head"
+            />
+          ),
+      )
+  }
   <TeamList
     members={currentTeam.members}
     allYears={allYears}

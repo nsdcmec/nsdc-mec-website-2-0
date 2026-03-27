@@ -133,7 +133,7 @@ const loadNeonData = async () => {
       subtitle: "",
       items: [],
     }) as TeamMainConfig;
-    const theme = (configMap.get("default-theme") || "system") as string;
+    const theme = (configMap.get("default-theme") || "light") as string;
 
     const colors = configMap.get("theme_colors") as ThemeColors | undefined;
 

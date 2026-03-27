@@ -15,16 +15,19 @@ interface Props {
   links: Link[];
   injections?: GlobalInjections;
   colors: ThemeColors | undefined;
-  description?: string|null;
-  image?: string |null;
+  description?: string | null;
+  image?: string | null;
+  defaultTheme: string;
 }
 
-const { title, links, injections, colors, description, image } = Astro.props;
+const { title, links, injections, colors, description, image, defaultTheme } =
+  Astro.props;
 
 const metaDescription =
   description ||
   "Official website of National Students Data Corps (NSDC) MEC Chapter.";
-const metaImage = image || "https://ik.imagekit.io/LOL123/opengraph.png?tr=f-webp";
+const metaImage =
+  image || "https://ik.imagekit.io/LOL123/opengraph.png?tr=f-webp";
 
 const topHtmlRaw = injections?.top_html;
 let topHtmlConfig: TopHtmlConfig | null = null;
@@ -134,7 +137,7 @@ const themeCss = generateThemeStyles(colors);
     <ClientRouter />
     <slot name="head" />
     {themeCss && <style is:inline set:html={themeCss} />}
-    <script is:inline>
+    <script is:inline define:vars={{ defaultTheme }}>
       const getTheme = () => {
         if (
           typeof localStorage !== "undefined" &&
@@ -142,7 +145,7 @@ const themeCss = generateThemeStyles(colors);
         ) {
           return localStorage.getItem("theme");
         }
-        return "system";
+        return defaultTheme || "light";
       };
 
       const applyTheme = (theme) => {
@@ -150,6 +153,11 @@ const themeCss = generateThemeStyles(colors);
         root.classList.remove("light", "dark");
         if (theme === "dark") root.classList.add("dark");
         if (theme === "light") root.classList.add("light");
+        if (theme === "system") {
+          if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+            root.classList.add("dark");
+          }
+        }
       };
 
       applyTheme(getTheme());

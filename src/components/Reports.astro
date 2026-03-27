@@ -1,5 +1,6 @@
 ---
 import type { Report } from "../types";
+import { formatDate } from "../lib/date-utils";
 
 interface Props {
   reports: Report[];
@@ -25,28 +26,27 @@ const { reports } = Astro.props;
       <div class="lg:col-span-9">
         {
           reports.length > 0 ? (
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {reports.map((report) => (
-                <article class="group flex flex-col h-full bg-bg-1 border border-bg-2  overflow-hidden  hover:border-fg-0/20 transition-all duration-300">
-                  <div class="relative w-full aspect-[4/3] overflow-hidden bg-bg-2 border-b border-bg-2">
+                <article class="group flex flex-col h-full bg-bg-1 p-4 gap-4 border border-bg-2  overflow-hidden  hover:border-fg-0/20 transition-all duration-300">
+                  <div class="relative w-full aspect-square  overflow-hidden">
                     <img
                       src={report.img}
                       width={300}
                       height={300}
                       alt={report.title}
-                      class="w-full h-full object-cover"
+                      class="w-full h-full "
                       loading="eager"
                     />
                   </div>
-
-                  <div class="flex flex-col flex-grow p-6">
-                    <div class="mb-3">
-                      <span class="text-xs font-mono font-bold text-fg-1 uppercase tracking-wider">
-                        {report.date
-                          ? new Date(report.date).getFullYear()
-                          : "Report"}
-                      </span>
-                    </div>
+                  <div class="flex flex-col flex-grow ">
+                    {report.date && (
+                      <div class="mb-3">
+                        <span class="text-xs font-mono font-bold text-fg-1 uppercase tracking-wider">
+                          {formatDate(report.date)}
+                        </span>
+                      </div>
+                    )}
 
                     <h3 class="text-xl font-bold font-sans text-fg-0 leading-tight mb-3 group-hover:text-primary transition-colors">
                       {report.title}

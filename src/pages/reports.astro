@@ -17,6 +17,11 @@ const reports = data.events
     const eventDate = parseEventDate(e.date);
     return eventDate > 0 && eventDate < now && e.report_url;
   })
+  .sort((a, b) => {
+    const dateA = parseEventDate(a.date);
+    const dateB = parseEventDate(b.date);
+    return dateB - dateA;
+  })
   .map((e) => ({
     id: slugify(e.title),
     relation: slugify(e.title),
@@ -27,6 +32,14 @@ const reports = data.events
   }));
 ---
 
-<Layout title="Reports | NSDC MEC" links={data.links} injections={data.config.injections} colors={data.config.colors}>
+<Layout
+  title="Reports | NSDC MEC"
+  links={data.links}
+  injections={data.config.injections}
+  colors={data.config.colors}
+  description="Reports from NSDC MEC Events"
+  defaultTheme={data.config.theme}
+>
   <ReportComponent reports={reports} />
 </Layout>
+

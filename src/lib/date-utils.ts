@@ -10,12 +10,16 @@ export function parseEventDate(dateStr: string | null): number {
         return isoParsed;
     }
 
-    // 2. Handle DD/MM/YYYY (Legacy format often used in DB)
-    const ddMmYyyyMatch = sanitizedStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-    if (ddMmYyyyMatch) {
-        const [_, day, month, year] = ddMmYyyyMatch;
+    // 2. Handle DD/MM/YYYY or D/M/YY
+    const slashMatch = sanitizedStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+    if (slashMatch) {
+        const [_, day, month, yearStr] = slashMatch;
+        let year = parseInt(yearStr);
+        if (yearStr.length === 2) {
+            year += year < 70 ? 2000 : 1900;
+        }
         return new Date(
-            parseInt(year),
+            year,
             parseInt(month) - 1,
             parseInt(day),
         ).getTime();
@@ -58,4 +62,15 @@ export function parseEventDate(dateStr: string | null): number {
     // Return 0 if completely unparseable
     console.warn(`[date-utils] Failed to parse date string: "${dateStr}"`);
     return 0;
+}
+
+export function formatDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return "";
+  const ts = parseEventDate(dateStr);
+  if (ts === 0) return dateStr;
+  return new Date(ts).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 }

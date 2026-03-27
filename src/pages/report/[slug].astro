@@ -1,7 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { dataService } from "../../lib/data-service";
-import { parseEventDate } from "../../lib/date-utils";
+import { formatDate } from "../../lib/date-utils";
 import { slugify } from "../../lib/slugify";
 import { getTarget, getRel } from "../../lib/link-utils";
 
@@ -17,16 +17,7 @@ if (!event || !event.report_url) {
   return Astro.redirect("/404");
 }
 
-const formattedDate = (() => {
-  if (!event.date) return "TBA";
-  const ts = parseEventDate(event.date);
-  if (ts === 0) return event.date;
-  return new Date(ts).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-})();
+const formattedDate = formatDate(event.date);
 
 const metaDescription = event.description
   ? event.description.length > 160
@@ -42,6 +33,7 @@ const metaDescription = event.description
   colors={data.config.colors}
   description={metaDescription}
   image={event.image_url}
+  defaultTheme={data.config.theme}
 >
   <div class="flex flex-col lg:flex-row min-h-screen bg-bg-0">
     {/* Left Side: Info (Sticky) */}
@@ -66,15 +58,18 @@ const metaDescription = event.description
         </h1>
 
         <div class="flex flex-col gap-4 border-l-2 border-fg-0 pl-4 py-1">
-          <div class="flex flex-col">
-            <span
-              class="text-[9px] font-mono font-bold text-fg-1 uppercase tracking-widest mb-1"
-              >Event Date</span
-            >
-            <span class="text-base font-bold text-fg-0 uppercase tracking-tight"
-              >{formattedDate}</span
-            >
-          </div>
+          {
+            formattedDate && (
+              <div class="flex flex-col">
+                <span class="text-[9px] font-mono font-bold text-fg-1 uppercase tracking-widest mb-1">
+                  Event Date
+                </span>
+                <span class="text-base font-bold text-fg-0 uppercase tracking-tight">
+                  {formattedDate}
+                </span>
+              </div>
+            )
+          }
 
           {
             event.venue && (
