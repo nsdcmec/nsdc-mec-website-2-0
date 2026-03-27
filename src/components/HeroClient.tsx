@@ -55,7 +55,7 @@ export default function HeroClient(props: Props) {
              ========================================= */
           <div class="relative w-full h-[100dvh] flex flex-col overflow-hidden">
             {/* Background Layer (Animation/Glow) */}
-            <div class="absolute inset-0 pointer-events-none z-0 opacity-40">
+            <div class="absolute inset-0 pointer-events-none z-0 opacity-60">
               <Show
                 when={props.main.animation_variant}
                 fallback={
@@ -111,13 +111,25 @@ export default function HeroClient(props: Props) {
         {/* =========================================
             STATE: SPLIT EVENT/MEDIA LAYOUT
             ========================================= */}
-        <div class="grid grid-rows-9 md:grid-rows-1 md:grid-cols-3 md:gap-12 items-stretch min-h-[calc(100dvh-80px)] w-full">
-          <div class="md:col-span-1 row-span-5 md:row-span-1 flex flex-col p-4 md:p-8 pt-6 md:pt-12 md:justify-between relative z-10">
+        <div class="md:grid flex flex-col justify-between  md:grid-rows-1 md:grid-cols-3 md:gap-12 items-stretch h-[calc(100dvh-80px)] w-full">
+          <div class="absolute inset-0 pointer-events-none z-0 opacity-40">
+            <Show
+              when={props.main.animation_variant}
+              fallback={
+                <div class="flex items-center justify-center w-full h-full">
+                  <div class="w-[60vw] h-[60vw] max-w-[600px] max-h-[600px] bg-primary/20 rounded-full blur-[100px] md:blur-[140px]"></div>
+                </div>
+              }
+            >
+              <HeroAnimation variant={props.main.animation_variant} />
+            </Show>
+          </div>
+          <div class="md:col-span-1   flex flex-col p-4 md:p-8 pt-6 md:pt-12 md:justify-between relative z-10">
             <div class="flex flex-col gap-4 md:gap-0">
               <Announcements announcements={props.announcements} />
               <h1
                 class=" font-extrabold tracking-tight text-fg-0 font-sans leading-[1.1]"
-                style="font-size: clamp(2rem,min(5dvw,9dvh),5rem)"
+                style="font-size: clamp(2rem,min(10dvw,14dvh),5rem)"
               >
                 {props.config.title || "National Students Data Corps"}
               </h1>
@@ -128,13 +140,16 @@ export default function HeroClient(props: Props) {
                 {props.config.subtitle || "MEC Chapter"}
               </h2>
             </div>
-            <p class="text-lg text-fg-1 mt-8 md:mt-4 md:mb-0 font-sans leading-relaxed">
+            <p class=" text-fg-1 mt-8 md:mt-4 md:mb-0 font-sans leading-relaxed"
+                style="font-size: clamp(0.8rem,min(3dvw,5dvh),1.2rem)"
+
+            >
               {props.config.desc ||
                 "Bridging the gap between academic curriculum and industry demand in data-centric careers."}
             </p>
           </div>
 
-          <div class="md:col-span-2 md:row-span-1 bg-bg-0 row-span-4 w-full h-[400px] md:h-auto relative group overflow-hidden">
+          <div class="md:col-span-2  bg-bg-0  w-full aspect-square md:h-auto relative group overflow-hidden">
             <Show
               when={activeEvent()}
               fallback={
@@ -176,7 +191,7 @@ export default function HeroClient(props: Props) {
                       <div class="bg-bg-0/75 backdrop-blur-sm border-t border-bg-2 p-2 md:p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
                         <div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
                           <Show when={props.main.desc}>
-                            <p class="text-fg-0 text-sm md:text-base font-medium font-sans leading-snug">
+                            <p class="text-fg-0 text-xs md:text-base font-medium font-sans leading-snug">
                               {props.main.desc}
                             </p>
                           </Show>

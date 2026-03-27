@@ -14,6 +14,10 @@ const sortedResources = [...resources].sort((a, b) => {
   if (a.status === "active" && b.status === "archived") return -1;
   if (a.status === "archived" && b.status === "active") return 1;
 
+  // same status ,sort by priority
+  const priorityA = a.priority || 0;
+  const priorityB = b.priority || 0;
+  if (priorityA !== priorityB) return priorityA - priorityB;
   // Same status, sort by date (newest first)
   const dateA = parseEventDate(a.date);
   const dateB = parseEventDate(b.date);

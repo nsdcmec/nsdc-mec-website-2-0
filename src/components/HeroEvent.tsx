@@ -176,7 +176,7 @@ export default function HeroEvent(props: Props) {
             <span
               class={`px-3 py-1 text-xs font-bold uppercase tracking-widest rounded-sm ${
                 state() === "ongoing"
-                  ? "bg-red-500 text-white animate-pulse"
+                  ? "bg-primary text-primary-fg animate-pulse"
                   : state() === "upcoming"
                     ? "bg-primary text-primary-fg"
                     : "bg-bg-1 text-fg-1"
@@ -191,7 +191,7 @@ export default function HeroEvent(props: Props) {
           </div>
 
           {/* Title */}
-          <h2 class="text-3xl md:text-5xl font-bold font-sans text-fg-0 leading-tight">
+          <h2 class="text-2xl md:text-4xl font-bold font-sans text-fg-0 leading-tight">
             {props.event.title}
           </h2>
 
@@ -237,7 +237,7 @@ export default function HeroEvent(props: Props) {
           </Show>
 
           <Show when={state() === "ongoing"}>
-            <p class="text-fg-1 font-sans text-lg">Happening now!</p>
+            <p class="text-fg-1 font-sans ">Happening now!</p>
           </Show>
 
           {/* Action Button */}
