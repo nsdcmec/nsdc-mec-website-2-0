@@ -53,7 +53,7 @@ export default function HeroClient(props: Props) {
           /* =========================================
              STATE: CENTERED "NONE" LAYOUT
              ========================================= */
-          <div class="relative w-full min-h-screen flex flex-col overflow-hidden">
+          <div class="relative w-full h-[100dvh] flex flex-col overflow-hidden">
             {/* Background Layer (Animation/Glow) */}
             <div class="absolute inset-0 pointer-events-none z-0 opacity-40">
               <Show
@@ -69,22 +69,37 @@ export default function HeroClient(props: Props) {
             </div>
 
             {/* Content Layer */}
-            <div class="relative z-10 flex-grow pointer-events-auto flex flex-col items-center justify-center text-center px-4 py-20">
-              <div class="max-w-5xl mx-auto w-full flex flex-col items-center ">
+            <div
+              class="relative z-10 flex-grow pointer-events-auto flex flex-col items-center justify-center text-center   "
+              style="padding: clamp(2rem,min(3dvw,6dvh),5rem) clamp(0.2rem,min(0.5dvw,2dvh),0.6rem)"
+            >
+              <div
+                class="max-w-5xl mx-auto w-full flex flex-col items-center"
+                style="gap: clamp(0.5rem,min(1dvw,3dvh),1rem)"
+              >
                 <Announcements
                   announcements={props.announcements}
                   centered={true}
                 />
 
-                <h1 class="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-black tracking-tighter text-fg-0 font-sans leading-[0.95] mb-6 uppercase">
+                <h1
+                  class="font-black  tracking-tighter text-fg-0 font-sans leading-[0.95]  uppercase"
+                  style="font-size: clamp(3rem,min(10dvw,16dvh),8rem)"
+                >
                   {props.config.title || "NSDC MEC"}
                 </h1>
 
-                <h2 class="text-xl sm:text-2xl md:text-3xl text-fg-1 font-medium tracking-tight mb-8">
+                <h2
+                  class="text-fg-1 font-medium tracking-tight "
+                  style="font-size: clamp(1.25rem,min(5dvw,10dvh),2.4rem)"
+                >
                   {props.config.subtitle || "National Students Data Corps"}
                 </h2>
 
-                <p class="text-base sm:text-lg md:text-xl text-fg-1 font-sans leading-relaxed max-w-2xl mx-auto mb-10 opacity-80">
+                <p
+                  class="text-fg-1 font-sans leading-relaxed max-w-2xl mx-auto  opacity-85"
+                  style="font-size: clamp(1rem,min(3dvw,6dvh),1.25rem)"
+                >
                   {props.config.desc ||
                     "Bridging the gap between academic curriculum and industry demand in data-centric careers."}
                 </p>
@@ -96,14 +111,20 @@ export default function HeroClient(props: Props) {
         {/* =========================================
             STATE: SPLIT EVENT/MEDIA LAYOUT
             ========================================= */}
-        <div class="grid grid-rows-9 md:grid-rows-1 md:grid-cols-3 md:gap-12 items-stretch min-h-[calc(100vh-80px)] w-full">
+        <div class="grid grid-rows-9 md:grid-rows-1 md:grid-cols-3 md:gap-12 items-stretch min-h-[calc(100dvh-80px)] w-full">
           <div class="md:col-span-1 row-span-5 md:row-span-1 flex flex-col p-4 md:p-8 pt-6 md:pt-12 md:justify-between relative z-10">
             <div class="flex flex-col gap-4 md:gap-0">
               <Announcements announcements={props.announcements} />
-              <h1 class="text-6xl md:text-6xl font-extrabold tracking-tight text-fg-0 font-sans leading-[1.1]">
+              <h1
+                class=" font-extrabold tracking-tight text-fg-0 font-sans leading-[1.1]"
+                style="font-size: clamp(2rem,min(5dvw,9dvh),5rem)"
+              >
                 {props.config.title || "National Students Data Corps"}
               </h1>
-              <h2 class="text-xl md:text-2xl text-fg-1 mt-1 font-serif">
+              <h2
+                class=" text-fg-1 mt-1 font-serif"
+                style="font-size: clamp(0.9rem,min(4dvw,7dvh),1.8rem)"
+              >
                 {props.config.subtitle || "MEC Chapter"}
               </h2>
             </div>

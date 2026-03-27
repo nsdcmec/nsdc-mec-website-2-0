@@ -127,8 +127,14 @@ export default function EventsIsland(props: Props) {
         `[data-nav="${navId}"]`,
       ) as HTMLElement;
       if (el) {
+        const containerRect = mobileNavRef.getBoundingClientRect();
+        const elRect = el.getBoundingClientRect();
         const center =
-          el.offsetLeft + el.offsetWidth / 2 - mobileNavRef.clientWidth / 2;
+          elRect.left -
+          containerRect.left +
+          mobileNavRef.scrollLeft -
+          containerRect.width / 2 +
+          elRect.width / 2;
         mobileNavRef.scrollTo({ left: center, behavior: "smooth" });
       }
     }
@@ -138,8 +144,14 @@ export default function EventsIsland(props: Props) {
         `[data-nav="${currentItem.id}"]`,
       ) as HTMLElement;
       if (el) {
+        const containerRect = desktopNavRef.getBoundingClientRect();
+        const elRect = el.getBoundingClientRect();
         const center =
-          el.offsetTop - desktopNavRef.clientHeight / 2 + el.clientHeight / 2;
+          elRect.top -
+          containerRect.top +
+          desktopNavRef.scrollTop -
+          containerRect.height / 2 +
+          elRect.height / 2;
         desktopNavRef.scrollTo({ top: center, behavior: "smooth" });
       }
     }

@@ -347,14 +347,14 @@ export default function TeamList(props: TeamListProps) {
 
                     {/* Container with padding to hold the borders exactly in place */}
                     <div class="mt-8 mx-2 pb-16">
-                      <div class="flex flex-wrap justify-center -ml-[2px] -mt-[2px]">
+                      <div class="flex flex-wrap justify-center -ml-[1px] ">
                         <For each={group.members}>
                           {(member, index) => {
                             const socials = member.social_links;
                             const isCritical = index() < 6;
 
                             return (
-                              <div class="flex flex-col border border-fg-0/40 p-6 bg-bg-0 rounded-none w-full sm:w-1/2 lg:w-1/3 max-w-[340px] sm:max-w-none -ml-[2px] -mt-[2px] box-border relative z-10">
+                              <div class="flex flex-col border  border-fg-0/40 p-6 bg-bg-0 rounded-none w-full sm:w-1/2 lg:w-1/3 max-w-[340px] sm:max-w-none -ml-[1px] -mt-[1px]  box-border relative z-10">
                                 <div class="aspect-[3/4] overflow-hidden bg-bg-1">
                                   <Show
                                     when={member.image_url}
