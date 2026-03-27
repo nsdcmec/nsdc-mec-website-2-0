@@ -1,4 +1,3 @@
-
 /**
  * HeroReveal.tsx
  *
@@ -6,6 +5,8 @@
  * Removes the blur and secondary sway entirely. Uses a pure 3D perspective 
  * transform (translating Y and Z while rotating X) with a spring-like 
  * bezier curve to create a crisp, flawless "fly in and settle" effect.
+ *
+ * NOTE: Styles are defined in src/styles/global.css to prevent FOUC.
  */
 
 import { type JSX, splitProps, mergeProps, For } from "solid-js";
@@ -25,63 +26,6 @@ interface HeroRevealProps {
 interface HeroTextSplitProps extends Omit<HeroRevealProps, "children"> {
   text: string;
   wordStaggerMs?: number;
-}
-
-// Inject the premium cinematic keyframes into the document <head>
-function ensureKeyframes() {
-  if (typeof document === "undefined") return; // SSR guard
-  const id = "__hero-framer-reveal-kf__";
-  if (document.getElementById(id)) return;
-
-  const style = document.createElement("style");
-  style.id = id;
-  style.textContent = `
-    /* 
-      1. Framer Premium Fly-In:
-      A crisp, 3D swooping entrance. It starts pushed down (Y), pushed back (Z), 
-      and folded backward (rotateX). The perspective gives it physical depth.
-      Once it hits 100%, it stays perfectly static.
-    */
-    @keyframes framer-premium-fly {
-      0% {
-        opacity: 0;
-        transform: perspective(1200px) translateY(60px) translateZ(-60px) rotateX(-60deg);
-      }
-      100% {
-        opacity: 1;
-        transform: perspective(1200px) translateY(0px) translateZ(0px) rotateX(0deg);
-      }
-    }
-
-    /* 
-      2. Framer Fade-Up (For descriptions/buttons):
-      A clean, pure 2D upward slide to contrast the 3D title reveal.
-    */
-    @keyframes framer-premium-fade {
-      0% {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      100% {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .framer-word {
-      will-change: transform, opacity;
-      transform-style: preserve-3d;
-      transform-origin: bottom center;
-      /* 'both' ensures it remains hidden before the delay starts, and stays exactly at 100% after */
-      animation: framer-premium-fly var(--reveal-duration) var(--reveal-easing) var(--reveal-delay) both;
-    }
-
-    .framer-fade {
-      will-change: transform, opacity;
-      animation: framer-premium-fade var(--reveal-duration) var(--reveal-easing) var(--reveal-delay) both;
-    }
-  `;
-  document.head.appendChild(style);
 }
 
 // The core of the Framer aesthetic: The Spring Bezier.
@@ -105,7 +49,7 @@ export function HeroTextSplit(props: HeroTextSplitProps) {
     props
   );
 
-  const [local, rest] = splitProps(merged,[
+  const [local, rest] = splitProps(merged, [
     "text",
     "index",
     "staggerMs",
@@ -116,8 +60,6 @@ export function HeroTextSplit(props: HeroTextSplitProps) {
     "class",
     "style"
   ]);
-
-  ensureKeyframes();
 
   const words = () => local.text.split(/\s+/);
   const baseDelayMs = () => local.delayMs + local.index * local.staggerMs;
@@ -164,7 +106,7 @@ export function HeroRevealFade(props: HeroRevealProps) {
     props
   );
 
-  const [local, rest] = splitProps(merged,[
+  const [local, rest] = splitProps(merged, [
     "index",
     "staggerMs",
     "durationMs",
@@ -175,7 +117,6 @@ export function HeroRevealFade(props: HeroRevealProps) {
     "children",
   ]);
 
-  ensureKeyframes();
   const totalDelayMs = () => local.delayMs + local.index * local.staggerMs;
 
   const inlineStyle = (): JSX.CSSProperties => {

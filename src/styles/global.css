@@ -82,3 +82,44 @@
 body {
   font-family: var(--font-sans);
 }
+
+/* 
+  Hero Reveal Animations (Framer-style)
+  Moved to global CSS to prevent FOUC (Flash of Unstyled Content) 
+  by ensuring styles are present in initial HTML.
+*/
+@keyframes framer-premium-fly {
+  0% {
+    opacity: 0;
+    transform: perspective(1200px) translateY(60px) translateZ(-60px) rotateX(-60deg);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(1200px) translateY(0px) translateZ(0px) rotateX(0deg);
+  }
+}
+
+@keyframes framer-premium-fade {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.framer-word {
+  will-change: transform, opacity;
+  transform-style: preserve-3d;
+  transform-origin: bottom center;
+  opacity: 0; /* Critical initial state for FOUC prevention */
+  animation: framer-premium-fly var(--reveal-duration) var(--reveal-easing) var(--reveal-delay) both;
+}
+
+.framer-fade {
+  will-change: transform, opacity;
+  opacity: 0; /* Critical initial state for FOUC prevention */
+  animation: framer-premium-fade var(--reveal-duration) var(--reveal-easing) var(--reveal-delay) both;
+}

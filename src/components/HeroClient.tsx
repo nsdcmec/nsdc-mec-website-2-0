@@ -16,8 +16,10 @@ interface Props {
 
 export default function HeroClient(props: Props) {
   const [now, setNow] = createSignal(new Date().getTime());
+  const [isHydrated, setIsHydrated] = createSignal(false);
 
   onMount(() => {
+    setIsHydrated(true);
     setNow(new Date().getTime());
     const interval = setInterval(() => {
       setNow(new Date().getTime());
@@ -54,7 +56,10 @@ export default function HeroClient(props: Props) {
           /* =========================================
              STATE: CENTERED "NONE" LAYOUT
              ========================================= */
-          <div class="relative w-full h-[100dvh] flex flex-col overflow-hidden">
+          <div 
+            class="relative w-full h-[100dvh] flex flex-col overflow-hidden transition-opacity duration-700 ease-in-out"
+            style={{ opacity: isHydrated() ? 1 : 0 }}
+          >
             {/* Background Layer (Animation/Glow) */}
             <div class="absolute inset-0 pointer-events-none z-0 opacity-60">
               <Show
@@ -65,7 +70,9 @@ export default function HeroClient(props: Props) {
                   </div>
                 }
               >
-                <HeroAnimation variant={props.main.animation_variant} />
+                <HeroAnimation 
+                  variant={props.main.animation_variant} 
+                />
               </Show>
             </div>
 
@@ -78,36 +85,37 @@ export default function HeroClient(props: Props) {
                 class="max-w-5xl mx-auto w-full flex flex-col items-center"
                 style="gap: clamp(0.5rem,min(1dvw,3dvh),1rem)"
               >
-                <HeroRevealFade index={0} as="div">
-                  <Announcements announcements={props.announcements} centered={true} />
-                </HeroRevealFade>
+                <Show when={isHydrated()}>
+                  <HeroRevealFade index={0} as="div">
+                    <Announcements announcements={props.announcements} centered={true} />
+                  </HeroRevealFade>
 
-                {/* Using HeroTextSplit for the calm, word-by-word reveal */}
-                <HeroTextSplit
-                  index={1}
-                  as="h1"
-                  class="font-black tracking-tighter text-fg-0 font-sans leading-[0.95] uppercase"
-                  style="font-size: clamp(3rem,min(10dvw,16dvh),8rem)"
-                  text={props.config.title || "NSDC MEC"}
-                />
+                  <HeroTextSplit
+                    index={1}
+                    as="h1"
+                    class="font-black tracking-tighter text-fg-0 font-sans leading-[0.95] uppercase"
+                    style="font-size: clamp(3rem,min(10dvw,16dvh),8rem)"
+                    text={props.config.title || "NSDC MEC"}
+                  />
 
-                <HeroTextSplit
-                  index={2}
-                  as="h2"
-                  class="text-fg-1 font-medium tracking-tight"
-                  style="font-size: clamp(1.25rem,min(5dvw,10dvh),2.4rem)"
-                  text={props.config.subtitle || "National Students Data Corps"}
-                />
+                  <HeroTextSplit
+                    index={2}
+                    as="h2"
+                    class="text-fg-1 font-medium tracking-tight"
+                    style="font-size: clamp(1.25rem,min(5dvw,10dvh),2.4rem)"
+                    text={props.config.subtitle || "National Students Data Corps"}
+                  />
 
-                <HeroRevealFade index={3} as="div">
-                  <p
-                    class="text-fg-1 font-sans leading-relaxed max-w-2xl mx-auto opacity-85 mt-2"
-                    style="font-size: clamp(1rem,min(3dvw,6dvh),1.25rem)"
-                  >
-                    {props.config.desc ||
-                      "Bridging the gap between academic curriculum and industry demand in data-centric careers."}
-                  </p>
-                </HeroRevealFade>
+                  <HeroRevealFade index={3} as="div">
+                    <p
+                      class="text-fg-1 font-sans leading-relaxed max-w-2xl mx-auto opacity-85 mt-2"
+                      style="font-size: clamp(1rem,min(3dvw,6dvh),1.25rem)"
+                    >
+                      {props.config.desc ||
+                        "Bridging the gap between academic curriculum and industry demand in data-centric careers."}
+                    </p>
+                  </HeroRevealFade>
+                </Show>
               </div>
             </div>
           </div>
@@ -116,7 +124,10 @@ export default function HeroClient(props: Props) {
         {/* =========================================
             STATE: SPLIT EVENT/MEDIA LAYOUT
             ========================================= */}
-        <div class="md:grid flex flex-col justify-between md:grid-rows-1 md:grid-cols-3 md:gap-12 items-stretch h-[calc(100dvh-80px)] w-full">
+        <div 
+          class="md:grid flex flex-col justify-between md:grid-rows-1 md:grid-cols-3 md:gap-12 items-stretch h-[calc(100dvh-80px)] w-full transition-opacity duration-700 ease-in-out"
+          style={{ opacity: isHydrated() ? 1 : 0 }}
+        >
           <div class="absolute inset-0 pointer-events-none z-0 opacity-40">
             <Show
               when={props.main.animation_variant}
@@ -126,42 +137,48 @@ export default function HeroClient(props: Props) {
                 </div>
               }
             >
-              <HeroAnimation variant={props.main.animation_variant} />
+              <HeroAnimation 
+                variant={props.main.animation_variant} 
+              />
             </Show>
           </div>
 
           <div class="md:col-span-1 flex flex-col p-4 md:p-8 pt-6 md:pt-12 md:justify-between relative z-10">
             <div class="flex flex-col gap-4 md:gap-0">
-              <HeroRevealFade index={0} as="div">
-                <Announcements announcements={props.announcements} />
-              </HeroRevealFade>
+              <Show when={isHydrated()}>
+                <HeroRevealFade index={0} as="div">
+                  <Announcements announcements={props.announcements} />
+                </HeroRevealFade>
 
-              <HeroTextSplit
-                index={1}
-                as="h1"
-                class="font-extrabold tracking-tight text-fg-0 font-sans leading-[1.1] md:mt-6"
-                style="font-size: clamp(2rem,min(10dvw,14dvh),5rem)"
-                text={props.config.title || "National Students Data Corps"}
-              />
+                <HeroTextSplit
+                  index={1}
+                  as="h1"
+                  class="font-extrabold tracking-tight text-fg-0 font-sans leading-[1.1] md:mt-6"
+                  style="font-size: clamp(2rem,min(10dvw,14dvh),5rem)"
+                  text={props.config.title || "National Students Data Corps"}
+                />
 
-              <HeroTextSplit
-                index={2}
-                as="h2"
-                class="text-fg-1 mt-1 font-serif"
-                style="font-size: clamp(0.9rem,min(4dvw,7dvh),1.8rem)"
-                text={props.config.subtitle || "MEC Chapter"}
-              />
+                <HeroTextSplit
+                  index={2}
+                  as="h2"
+                  class="text-fg-1 mt-1 font-serif"
+                  style="font-size: clamp(0.9rem,min(4dvw,7dvh),1.8rem)"
+                  text={props.config.subtitle || "MEC Chapter"}
+                />
+              </Show>
             </div>
 
-            <HeroRevealFade index={3} as="div">
-              <p
-                class="text-fg-1 mt-8 md:mt-4 md:mb-0 font-sans leading-relaxed"
-                style="font-size: clamp(0.8rem,min(3dvw,5dvh),1.2rem)"
-              >
-                {props.config.desc ||
-                  "Bridging the gap between academic curriculum and industry demand in data-centric careers."}
-              </p>
-            </HeroRevealFade>
+            <Show when={isHydrated()}>
+              <HeroRevealFade index={3} as="div">
+                <p
+                  class="text-fg-1 mt-8 md:mt-4 md:mb-0 font-sans leading-relaxed"
+                  style="font-size: clamp(0.8rem,min(3dvw,5dvh),1.2rem)"
+                >
+                  {props.config.desc ||
+                    "Bridging the gap between academic curriculum and industry demand in data-centric careers."}
+                </p>
+              </HeroRevealFade>
+            </Show>
           </div>
 
           <div class="md:col-span-2 bg-bg-0 w-full aspect-square md:h-auto relative group overflow-hidden">
@@ -197,7 +214,9 @@ export default function HeroClient(props: Props) {
                     />
                   </Show>
                   <Show when={props.main.type === "animation"}>
-                    <HeroAnimation variant={props.main.animation_variant} />
+                    <HeroAnimation 
+                      variant={props.main.animation_variant} 
+                    />
                   </Show>
 
                   {/* Fallback Media Overlay */}

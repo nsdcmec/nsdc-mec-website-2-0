@@ -1,13 +1,15 @@
-import { onMount, onCleanup } from "solid-js";
+import { onMount, onCleanup, createSignal } from "solid-js";
 import type { AnimationVariant } from "../types";
 
 interface HeroAnimationProps {
   variant?: AnimationVariant;
+  onReady?: () => void;
 }
 
 export default function HeroAnimation(props: HeroAnimationProps) {
   let canvasRef: HTMLCanvasElement | undefined;
   let containerRef: HTMLDivElement | undefined;
+  const [isReady, setIsReady] = createSignal(false);
 
   onMount(() => {
     if (!canvasRef || !containerRef) return;
@@ -22,6 +24,15 @@ export default function HeroAnimation(props: HeroAnimationProps) {
     let mouseIdleTimer: ReturnType<typeof setTimeout> | null = null;
     const MOUSE_FADE_DELAY = 800; // ms before starting to fade
     let mouseActive = false;
+
+    let firstFrameDrawn = false;
+    const signalReady = () => {
+      if (!firstFrameDrawn) {
+        firstFrameDrawn = true;
+        setIsReady(true);
+        props.onReady?.();
+      }
+    };
 
     const resize = () => {
       if (!containerRef) return;
@@ -155,6 +166,7 @@ export default function HeroAnimation(props: HeroAnimationProps) {
           }
         }
 
+        signalReady();
         animationFrameId = requestAnimationFrame(animate);
       };
 
@@ -210,13 +222,13 @@ export default function HeroAnimation(props: HeroAnimationProps) {
           baseSpeed: speed,
           life: 0,
           maxLife: width / speed + Math.random() * 200,
-          size: Math.random() * 1.5 + 0.5,
-          brightness: Math.random() * 0.5 + 0.3,
+          size: Math.random() * 1.5 + 0.9,
+          brightness: Math.random() * 0.5 + 0.4,
         };
       };
 
       const init = () => {
-        const count = Math.floor((width * height) / 3000);
+        const count = Math.floor((width * height) / 4000);
         particles = [];
         for (let i = 0; i < count; i++) {
           const p = createParticle();
@@ -297,8 +309,8 @@ export default function HeroAnimation(props: HeroAnimationProps) {
 
           const alpha = Math.min(p.brightness + speedBrightness * 0.3, 0.9);
 
-          // Draw particle with a tiny tail
-          const tailLength = Math.min(speed * 3, 12);
+          // Draw particle with a longer, more fluid tail
+          const tailLength = Math.min(speed * 3, 50);
           const tailAngle = Math.atan2(-p.vy, -p.vx);
 
           ctx!.beginPath();
@@ -350,6 +362,7 @@ export default function HeroAnimation(props: HeroAnimationProps) {
           ctx!.fill();
         }
 
+        signalReady();
         animationFrameId = requestAnimationFrame(animate);
       };
 
@@ -547,6 +560,7 @@ export default function HeroAnimation(props: HeroAnimationProps) {
           });
         }
 
+        signalReady();
         animationFrameId = requestAnimationFrame(animate);
       };
 
@@ -673,7 +687,11 @@ export default function HeroAnimation(props: HeroAnimationProps) {
 
   return (
     <div ref={containerRef} class="w-full h-full relative pointer-events-none">
-      <canvas ref={canvasRef} class="w-full h-full block" />
+      <canvas 
+        ref={canvasRef} 
+        class="w-full h-full block transition-opacity duration-1000 ease-out" 
+        style={{ opacity: isReady() ? 1 : 0 }}
+      />
     </div>
   );
 }
