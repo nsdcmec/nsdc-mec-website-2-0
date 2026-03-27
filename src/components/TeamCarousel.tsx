@@ -1,4 +1,11 @@
-import { createSignal, onMount, onCleanup, For, Show, createEffect } from "solid-js";
+import {
+  createSignal,
+  onMount,
+  onCleanup,
+  For,
+  Show,
+  createEffect,
+} from "solid-js";
 import type { CarouselItem } from "../types";
 
 interface TeamCarouselProps {
@@ -12,6 +19,7 @@ function CarouselSlide(props: {
   index: number;
   currentIndex: number;
   isPaused: boolean;
+  isMuted: boolean;
   onComplete: () => void;
 }) {
   let videoRef: HTMLVideoElement | undefined;
@@ -51,17 +59,16 @@ function CarouselSlide(props: {
           />
         }
       >
-        <video
-          ref={videoRef}
-          src={props.item.src}
-          class="w-full h-full object-cover cursor-pointer"
-          muted
-          playsinline
-          onEnded={() => props.onComplete()}
-          onClick={(e) => {
-            e.currentTarget.muted = !e.currentTarget.muted;
-          }}
-        />
+        <div class="relative w-full h-full">
+          <video
+            ref={videoRef}
+            src={props.item.src}
+            class="w-full h-full object-cover"
+            muted={props.isMuted}
+            playsinline
+            onEnded={() => props.onComplete()}
+          />
+        </div>
       </Show>
       <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
     </div>
@@ -71,23 +78,15 @@ function CarouselSlide(props: {
 export default function TeamCarousel(props: TeamCarouselProps) {
   const [currentIndex, setCurrentIndex] = createSignal(0);
   const [isPaused, setIsPaused] = createSignal(false);
+  const [isMuted, setIsMuted] = createSignal(true);
 
-  // Fallback to placeholder if no items
   const items = () =>
     props.items && props.items.length > 0
       ? [...props.items].sort((a, b) => a.priority - b.priority)
-      : [
-          {
-            type: "img",
-            src: "/placeholder-team.jpg",
-            priority: 0,
-          } as CarouselItem,
-        ];
+      : [];
 
   const goTo = (index: number) => {
     setCurrentIndex(index);
-    // When manually selecting, we keep it paused if it was paused, or just jump
-    // Optional: setIsPaused(true) to allow user to view specifically
   };
 
   const togglePause = () => {
@@ -98,6 +97,10 @@ export default function TeamCarousel(props: TeamCarouselProps) {
     setCurrentIndex((prev) => (prev + 1) % items().length);
   };
 
+  const prev = () => {
+    setCurrentIndex((prev) => (prev - 1 + items().length) % items().length);
+  };
+
   let timer: ReturnType<typeof setTimeout>;
 
   const startTimer = () => {
@@ -106,9 +109,8 @@ export default function TeamCarousel(props: TeamCarouselProps) {
 
     const currentItem = items()[currentIndex()];
     if (currentItem.type === "img") {
-      timer = setTimeout(next, 7000);
+      timer = setTimeout(next, 5000);
     }
-    // For video, we don't start a timer; CarouselSlide will call next() via onComplete
   };
 
   onMount(() => {
@@ -131,7 +133,81 @@ export default function TeamCarousel(props: TeamCarouselProps) {
         </div>
 
         {/* Carousel Frame */}
-        <div class="w-full max-w-5xl mx-auto relative aspect-[16/9] overflow-hidden rounded-sm bg-bg-1 shadow-sm border border-fg-0/5">
+        <div
+          class="w-full max-w-5xl mx-auto relative aspect-[16/9] overflow-hidden rounded-sm bg-bg-1  border border-fg-0/5 cursor-pointer group"
+          onClick={(e) => {
+            if ((e.target as HTMLElement).closest("button")) return;
+
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const threshold = rect.width * 0.1;
+
+            if (x < threshold) {
+              prev();
+            } else if (x > rect.width - threshold) {
+              next();
+            } else {
+              const currentItem = items()[currentIndex()];
+              if (currentItem.type === "video" && isMuted()) {
+                setIsMuted(false);
+                setIsPaused(false);
+              } else {
+                togglePause();
+              }
+            }
+          }}
+          onDblClick={(e) => {
+            // Double click anywhere in the middle 80% to toggle mute
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const threshold = rect.width * 0.1;
+
+            if (x >= threshold && x <= rect.width - threshold) {
+              setIsMuted(!isMuted());
+            }
+          }}
+        >
+          {/* Navigation Triggers (Visual Indicators) */}
+          <div class="absolute left-0 top-0 bottom-0 w-[10%] z-30 group/prev flex items-center justify-center pointer-events-none">
+            <div class="w-12 h-12 flex items-center justify-center bg-black/40 backdrop-blur-md rounded-full text-white opacity-0 group-hover/prev:opacity-100 transition-all duration-500 scale-90 group-hover/prev:scale-100 -translate-x-2 group-hover/prev:translate-x-0">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="m15 18-6-6 6-6" />
+              </svg>
+            </div>
+          </div>
+          <div class="absolute right-0 top-0 bottom-0 w-[10%] z-30 group/next flex items-center justify-center pointer-events-none">
+            <div class="w-12 h-12 flex items-center justify-center bg-black/40 backdrop-blur-md rounded-full text-white opacity-0 group-hover/next:opacity-100 transition-all duration-500 scale-90 group-hover/next:scale-100 translate-x-2 group-hover/next:translate-x-0">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="m9 18 6-6-6-6" />
+              </svg>
+            </div>
+          </div>
+
+          {/* Trigger Area Overlays for Hover (They stay transparent but catch hover for the groups above) */}
+          <div class="absolute left-0 top-0 bottom-0 w-[10%] z-40 group/prev pointer-events-none" />
+          <div class="absolute right-0 top-0 bottom-0 w-[20%] z-40 group/next pointer-events-none" />
+
+          <div class="absolute inset-y-0 left-0 w-[10%] z-30 peer/left pointer-events-auto" />
+          <div class="absolute inset-y-0 right-0 w-[20%] z-30 peer/right pointer-events-auto " />
+
           <For each={items()}>
             {(item, index) => (
               <CarouselSlide
@@ -139,6 +215,7 @@ export default function TeamCarousel(props: TeamCarouselProps) {
                 index={index()}
                 currentIndex={currentIndex()}
                 isPaused={isPaused()}
+                isMuted={isMuted()}
                 onComplete={next}
               />
             )}
@@ -146,7 +223,7 @@ export default function TeamCarousel(props: TeamCarouselProps) {
 
           {/* Navigation Dots */}
           {items().length > 1 && (
-            <div class="absolute bottom-6 left-6 flex gap-3 z-20 items-end">
+            <div class="absolute bottom-6 left-6 flex gap-3 z-50 items-end">
               <For each={items()}>
                 {(_, i) => {
                   const isActive = () => i() === currentIndex();
@@ -157,10 +234,16 @@ export default function TeamCarousel(props: TeamCarouselProps) {
                       onClick={() => (isActive() ? togglePause() : goTo(i()))}
                       aria-label={`${isPaused() ? "Play" : "Pause"} slide ${i() + 1}`}
                       class={`cursor-pointer transition-all duration-500 ease-out rounded-full flex items-center justify-center overflow-hidden ${
-                        showPause() ? "h-6 w-12 bg-primary text-primary-fg" : "h-1.5"
+                        showPause()
+                          ? "h-6 w-12 bg-primary text-primary-fg"
+                          : "h-1.5"
                       }`}
                       style={{
-                        width: showPause() ? "4rem" : isActive() ? "3rem" : "0.75rem",
+                        width: showPause()
+                          ? "4rem"
+                          : isActive()
+                            ? "3rem"
+                            : "0.75rem",
                         "background-color": isActive()
                           ? isPaused()
                             ? "var(--primary, #fff)"
