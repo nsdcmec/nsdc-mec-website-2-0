@@ -162,12 +162,29 @@ const themeCss = generateThemeStyles(colors);
 
       applyTheme(getTheme());
 
+      // Apply theme onto the INCOMING document before the swap happens,
+      // so the browser never paints a frame without the correct theme class.
+      document.addEventListener("astro:before-swap", (e) => {
+        const theme = getTheme();
+        e.newDocument.documentElement.classList.remove("light", "dark");
+        if (theme === "dark") e.newDocument.documentElement.classList.add("dark");
+        else if (theme === "light") e.newDocument.documentElement.classList.add("light");
+        else if (theme === "system") {
+          if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+            e.newDocument.documentElement.classList.add("dark");
+          }
+        }
+      });
+
+      // Belt-and-suspenders: re-apply after swap as well (handles edge cases)
       document.addEventListener("astro:after-swap", () =>
         applyTheme(getTheme()),
       );
     </script>
   </head>
-  <body class="antialiased min-h-screen flex flex-col overflow-x-hidden">
+  <body
+    class="antialiased min-h-screen flex flex-col overflow-x-hidden bg-bg-0"
+  >
     {
       showTopHtml && topHtmlConfig && (
         <div id="top-injection-banner" class="relative w-full z-[60]">
@@ -202,7 +219,7 @@ const themeCss = generateThemeStyles(colors);
       <Header links={links} />
     </div>
 
-    <main class="flex-grow w-full" transition:name="main">
+    <main class="flex-grow w-full">
       <slot />
     </main>
 

@@ -417,7 +417,10 @@ export default function EventsIsland(props: Props) {
             {/* Desktop Sidebar */}
             <div class="hidden md:block md:col-span-3">
               <div class="sticky top-24 max-h-[calc(100vh-8rem)] flex flex-col">
-                <h1 class="text-4xl md:text-5xl font-bold text-fg-0 uppercase tracking-tighter leading-tight mb-8">
+                <h1
+                  style={{ "view-transition-name": "events-title" }}
+                  class="text-4xl md:text-5xl font-bold text-fg-0 uppercase tracking-tighter leading-tight mb-8"
+                >
                   {props.isMinimal ? "Featured Events" : "Events"}
                 </h1>
 

@@ -18,7 +18,10 @@ export default function HeroAnimation(props: HeroAnimationProps) {
     let animationFrameId: number;
     let width = 0;
     let height = 0;
-    const mouse = { x: -2000, y: -2000, radius: 150 };
+    const mouse = { x: -2000, y: -2000, radius: 150, alpha: 0 };
+    let mouseIdleTimer: ReturnType<typeof setTimeout> | null = null;
+    const MOUSE_FADE_DELAY = 800; // ms before starting to fade
+    let mouseActive = false;
 
     const resize = () => {
       if (!containerRef) return;
@@ -97,13 +100,16 @@ export default function HeroAnimation(props: HeroAnimationProps) {
           if (this.x < 0 || this.x > width) this.vx *= -1;
           if (this.y < 0 || this.y > height) this.vy *= -1;
 
-          const dx = mouse.x - this.x;
-          const dy = mouse.y - this.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          if (distance < mouse.radius) {
-            const force = (mouse.radius - distance) / mouse.radius;
-            this.x -= dx * force * 0.02;
-            this.y -= dy * force * 0.02;
+          if (mouse.alpha > 0.01) {
+            const dx = mouse.x - this.x;
+            const dy = mouse.y - this.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance < mouse.radius) {
+              const force =
+                ((mouse.radius - distance) / mouse.radius) * mouse.alpha;
+              this.x -= dx * force * 0.02;
+              this.y -= dy * force * 0.02;
+            }
           }
         }
       }
@@ -119,6 +125,10 @@ export default function HeroAnimation(props: HeroAnimationProps) {
         ctx!.clearRect(0, 0, width, height);
         const color = getPrimaryColor();
         const rgb = hexToRgb(color);
+
+        // Smoothly fade mouse alpha in/out
+        const targetAlpha = mouseActive ? 1 : 0;
+        mouse.alpha += (targetAlpha - mouse.alpha) * 0.05;
 
         particles.forEach((p) => {
           p.update();
@@ -230,7 +240,11 @@ export default function HeroAnimation(props: HeroAnimationProps) {
 
         const color = getPrimaryColor();
         const rgb = hexToRgb(color);
-        const mouseActive = mouse.x > -1000;
+
+        // Smoothly fade mouse alpha in/out
+        const targetAlpha = mouseActive ? 1 : 0;
+        mouse.alpha += (targetAlpha - mouse.alpha) * 0.05;
+        const mouseEffectActive = mouse.alpha > 0.01;
 
         particles.forEach((p) => {
           // Base flow
@@ -244,14 +258,15 @@ export default function HeroAnimation(props: HeroAnimationProps) {
           targetVy += noiseY;
 
           // Mouse gravity well
-          if (mouseActive) {
+          if (mouseEffectActive) {
             const dx = mouse.x - p.x;
             const dy = mouse.y - p.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
             const influenceRadius = 200;
 
             if (dist < influenceRadius && dist > 5) {
-              const force = (influenceRadius - dist) / influenceRadius;
+              const force =
+                ((influenceRadius - dist) / influenceRadius) * mouse.alpha;
               // Orbit around mouse (tangential + slight attraction)
               const angle = Math.atan2(dy, dx);
               const tangentX = -Math.sin(angle) * force * 3;
@@ -314,8 +329,8 @@ export default function HeroAnimation(props: HeroAnimationProps) {
           }
         });
 
-        // Mouse glow effect
-        if (mouseActive) {
+        // Mouse glow effect (fades with alpha)
+        if (mouseEffectActive) {
           const gradient = ctx!.createRadialGradient(
             mouse.x,
             mouse.y,
@@ -324,7 +339,10 @@ export default function HeroAnimation(props: HeroAnimationProps) {
             mouse.y,
             120,
           );
-          gradient.addColorStop(0, `rgba(${rgb.r},${rgb.g},${rgb.b},0.06)`);
+          gradient.addColorStop(
+            0,
+            `rgba(${rgb.r},${rgb.g},${rgb.b},${0.06 * mouse.alpha})`,
+          );
           gradient.addColorStop(1, `rgba(${rgb.r},${rgb.g},${rgb.b},0)`);
           ctx!.beginPath();
           ctx!.arc(mouse.x, mouse.y, 120, 0, Math.PI * 2);
@@ -355,11 +373,16 @@ export default function HeroAnimation(props: HeroAnimationProps) {
       let cols = 0;
       let rows = 0;
       const spacing = 30;
+      // The isometric projection compresses Y by cosA, so we need more rows
+      // to fill the full canvas height: rows must cover height / cosA in grid-space
+      const isoAngle = 0.6;
+      const cosA = Math.cos(isoAngle);
 
       const init = () => {
         grid = [];
         cols = Math.ceil(width / spacing) + 2;
-        rows = Math.ceil(height / spacing) + 2;
+        // Extra rows to compensate for cosA compression so grid reaches canvas bottom
+        rows = Math.ceil(height / (spacing * cosA)) + 3;
 
         for (let r = 0; r < rows; r++) {
           const row: GridPoint[] = [];
@@ -379,44 +402,55 @@ export default function HeroAnimation(props: HeroAnimationProps) {
         ctx!.clearRect(0, 0, width, height);
         const color = getPrimaryColor();
         const rgb = hexToRgb(color);
-        const mouseActive = mouse.x > -1000;
         const influenceRadius = 200;
+
+        // Smoothly fade mouse alpha in/out
+        const targetAlpha = mouseActive ? 1 : 0;
+        mouse.alpha += (targetAlpha - mouse.alpha) * 0.05;
+        const mouseEffectActive = mouse.alpha > 0.01;
 
         // Update elevations
         for (let r = 0; r < rows; r++) {
           for (let c = 0; c < cols; c++) {
             const point = grid[r][c];
 
-            // Ambient wave
+            // Ambient wave — two overlapping frequencies for organic motion
             const wave =
-              Math.sin(point.baseX * 0.015 + time * 0.0008) *
-              Math.cos(point.baseY * 0.012 + time * 0.0006) *
-              8;
+              Math.sin(point.baseX * 0.012 + time * 0.0009) *
+              Math.cos(point.baseY * 0.01 + time * 0.0007) *
+              12 +
+              Math.sin(point.baseX * 0.007 - time * 0.0005) *
+              Math.sin(point.baseY * 0.009 + time * 0.0004) *
+              6;
 
             let mouseElevation = 0;
-            if (mouseActive) {
+            if (mouseEffectActive) {
               const dx = mouse.x - point.baseX;
               const dy = mouse.y - point.baseY;
               const dist = Math.sqrt(dx * dx + dy * dy);
 
               if (dist < influenceRadius) {
                 const normalized = dist / influenceRadius;
-                // Smooth bell curve elevation
-                mouseElevation = Math.exp(-normalized * normalized * 3) * 50;
+                // Smooth bell curve elevation — scaled by alpha
+                mouseElevation =
+                  Math.exp(-normalized * normalized * 3) * 50 * mouse.alpha;
                 // Ripple rings
                 mouseElevation +=
-                  Math.sin(dist * 0.08 - time * 0.004) * (1 - normalized) * 8;
+                  Math.sin(dist * 0.08 - time * 0.004) *
+                  (1 - normalized) *
+                  8 *
+                  mouse.alpha;
               }
             }
 
             point.targetElevation = wave + mouseElevation;
-            point.elevation += (point.targetElevation - point.elevation) * 0.12;
+            point.elevation +=
+              (point.targetElevation - point.elevation) * 0.12;
           }
         }
 
         // Draw grid — isometric projection
-        const isoAngle = 0.6; // Tilt angle
-        const cosA = Math.cos(isoAngle);
+        // cosA and isoAngle are defined at variant scope above
 
         // Helper to project point with elevation
         const project = (
@@ -441,8 +475,8 @@ export default function HeroAnimation(props: HeroAnimationProps) {
             }
           }
 
-          // Color based on row depth
-          const depthOpacity = 0.08 + (r / rows) * 0.15;
+          // Depth opacity: top rows more visible, bottom fades out (receding distance)
+          const depthOpacity = 0.2 - (r / rows) * 0.13;
           ctx!.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${depthOpacity})`;
           ctx!.lineWidth = 0.8;
           ctx!.stroke();
@@ -462,7 +496,7 @@ export default function HeroAnimation(props: HeroAnimationProps) {
             }
           }
 
-          const depthOpacity = 0.06 + (c / cols) * 0.1;
+          const depthOpacity = 0.14 - (c / cols) * 0.08;
           ctx!.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${depthOpacity})`;
           ctx!.lineWidth = 0.6;
           ctx!.stroke();
@@ -472,57 +506,45 @@ export default function HeroAnimation(props: HeroAnimationProps) {
         for (let r = 0; r < rows; r++) {
           for (let c = 0; c < cols; c++) {
             const p = grid[r][c];
-            if (Math.abs(p.elevation) > 5) {
+            if (Math.abs(p.elevation) > 6) {
               const [px, py] = project(p.baseX, p.baseY, p.elevation);
-              const intensity = Math.min(1, Math.abs(p.elevation) / 30);
+              const intensity = Math.min(1, Math.abs(p.elevation) / 22);
 
               ctx!.beginPath();
-              ctx!.arc(px, py, 1.5 + intensity * 2, 0, Math.PI * 2);
-              ctx!.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${intensity * 0.6})`;
+              ctx!.arc(px, py, 1 + intensity * 2.5, 0, Math.PI * 2);
+              ctx!.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${intensity * 0.55})`;
               ctx!.fill();
             }
           }
         }
 
         // Contour lines (elevation rings when mouse active)
-        if (mouseActive) {
+        if (mouseEffectActive) {
           const contourLevels = [10, 20, 30, 40];
           contourLevels.forEach((level) => {
             const contourRadius = influenceRadius * (1 - level / 60) * 0.8;
             if (contourRadius > 0) {
-              const [mx, my] = project(mouse.x, mouse.y, level * 0.8);
+              // Mouse is already in screen space — don't apply project() to it.
+              // Just lift by the elevation amount to match how grid points are drawn.
+              const cx = mouse.x;
+              const cy = mouse.y - level * 0.8;
               ctx!.beginPath();
               ctx!.ellipse(
-                mx,
-                my,
+                cx,
+                cy,
                 contourRadius,
                 contourRadius * cosA,
                 0,
                 0,
                 Math.PI * 2,
               );
-              ctx!.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},0.1)`;
+              ctx!.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${0.1 * mouse.alpha})`;
               ctx!.lineWidth = 0.5;
               ctx!.setLineDash([3, 6]);
               ctx!.stroke();
               ctx!.setLineDash([]);
             }
           });
-
-          // Elevation label
-          const maxElev = grid
-            .flat()
-            .reduce((max, p) => Math.max(max, p.elevation), 0);
-          if (maxElev > 5) {
-            ctx!.font = `${Math.max(9, width * 0.007)}px ui-monospace, monospace`;
-            ctx!.textAlign = "center";
-            ctx!.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},0.25)`;
-            ctx!.fillText(
-              `z: ${maxElev.toFixed(1)}`,
-              mouse.x,
-              mouse.y * cosA - maxElev - 20,
-            );
-          }
         }
 
         animationFrameId = requestAnimationFrame(animate);
@@ -567,15 +589,33 @@ export default function HeroAnimation(props: HeroAnimationProps) {
       if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
         mouse.x = x;
         mouse.y = y;
+        mouseActive = true;
+        mouse.alpha = 1; // snap to full on move
+
+        // Reset idle timer
+        if (mouseIdleTimer !== null) clearTimeout(mouseIdleTimer);
+        mouseIdleTimer = setTimeout(() => {
+          mouseActive = false;
+        }, MOUSE_FADE_DELAY);
       } else {
         mouse.x = -2000;
         mouse.y = -2000;
+        mouseActive = false;
+        if (mouseIdleTimer !== null) {
+          clearTimeout(mouseIdleTimer);
+          mouseIdleTimer = null;
+        }
       }
     };
 
     const handleMouseLeave = () => {
       mouse.x = -2000;
       mouse.y = -2000;
+      mouseActive = false;
+      if (mouseIdleTimer !== null) {
+        clearTimeout(mouseIdleTimer);
+        mouseIdleTimer = null;
+      }
     };
 
     const handleTouchMove = (e: TouchEvent) => {
@@ -587,9 +627,17 @@ export default function HeroAnimation(props: HeroAnimationProps) {
         if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
           mouse.x = x;
           mouse.y = y;
+          mouseActive = true;
+          mouse.alpha = 1;
+
+          if (mouseIdleTimer !== null) clearTimeout(mouseIdleTimer);
+          mouseIdleTimer = setTimeout(() => {
+            mouseActive = false;
+          }, MOUSE_FADE_DELAY);
         } else {
           mouse.x = -2000;
           mouse.y = -2000;
+          mouseActive = false;
         }
       }
     };
@@ -597,6 +645,11 @@ export default function HeroAnimation(props: HeroAnimationProps) {
     const handleTouchEnd = () => {
       mouse.x = -2000;
       mouse.y = -2000;
+      mouseActive = false;
+      if (mouseIdleTimer !== null) {
+        clearTimeout(mouseIdleTimer);
+        mouseIdleTimer = null;
+      }
     };
 
     window.addEventListener("resize", handleResize);
@@ -609,6 +662,7 @@ export default function HeroAnimation(props: HeroAnimationProps) {
 
     onCleanup(() => {
       cancelAnimationFrame(animationFrameId);
+      if (mouseIdleTimer !== null) clearTimeout(mouseIdleTimer);
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseleave", handleMouseLeave);

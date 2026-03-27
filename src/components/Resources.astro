@@ -1,7 +1,7 @@
 ---
 import type { Resource } from "../types";
 import { getTarget, getRel } from "../lib/link-utils";
-import { formatDate } from "../lib/date-utils";
+import { formatDate, parseEventDate } from "../lib/date-utils";
 
 interface Props {
   title: string;
@@ -9,6 +9,16 @@ interface Props {
 }
 
 const { title, resources } = Astro.props;
+
+const sortedResources = [...resources].sort((a, b) => {
+  if (a.status === "active" && b.status === "archived") return -1;
+  if (a.status === "archived" && b.status === "active") return 1;
+
+  // Same status, sort by date (newest first)
+  const dateA = parseEventDate(a.date);
+  const dateB = parseEventDate(b.date);
+  return dateB - dateA;
+});
 ---
 
 <section
@@ -29,9 +39,9 @@ const { title, resources } = Astro.props;
 
       <div class="lg:col-span-9">
         {
-          resources.length > 0 ? (
+          sortedResources.length > 0 ? (
             <div class="flex flex-col gap-12">
-              {resources.map((resource) => (
+              {sortedResources.map((resource) => (
                 <div
                   class="group block relative"
                   aria-label={`View ${resource.resource_type}: ${resource.title}`}
@@ -45,6 +55,11 @@ const { title, resources } = Astro.props;
                           </span>
                         )}
                         <div class="h-[1px] flex-grow bg-bg-2" />
+                        {resource.status === "archived" && (
+                          <span class="text-[10px] font-bold uppercase tracking-widest bg-bg-2 text-fg-1 px-2 py-0.5 rounded-sm border border-fg-0/10">
+                            Archived
+                          </span>
+                        )}
                         {resource.resource_type && (
                           <span class="text-[10px] font-bold uppercase tracking-widest bg-primary text-primary-fg px-2 py-0.5 rounded-sm">
                             {resource.resource_type}
