@@ -161,10 +161,22 @@ const formattedDate = event ? formatDate(event.date) : null;
     </Layout>
   ) : route.type === "iframe" ? (
     <IframeLayout title={pageTitle}>
-      <iframe
-        src={finalUrl}
-        class="w-[100dvw] h-[100dvh] border-none overflow-hidden m-0 p-0"
-      />
+      <div class="relative w-[100dvw] h-[100dvh]">
+        <div
+          id="iframe-loader"
+          class="absolute inset-0 flex flex-col items-center pt-24 bg-bg-0 z-10"
+        >
+          <img src="/logo.png" alt="NSDC Logo" class="w-12 h-12 object-contain animate-logo-load" />
+          <span class="text-fg-1 font-mono text-[10px] uppercase tracking-[0.2em] mt-4">
+            Loading Form...
+          </span>
+        </div>
+        <iframe
+          src={finalUrl}
+          class="w-full h-full border-none overflow-hidden m-0 p-0"
+          onload="document.getElementById('iframe-loader').style.display='none'"
+        />
+      </div>
     </IframeLayout>
   ) : (
     <Layout
@@ -223,14 +235,22 @@ const formattedDate = event ? formatDate(event.date) : null;
             </div>
 
             {/* Right Side: GForm Iframe */}
-            <div class="md:col-span-9" style={{ height: height }}>
+            <div class="md:col-span-9 relative" style={{ height: height }}>
+              <div
+                id="iframe-loader-reg"
+                class="absolute inset-0 flex flex-col items-center pt-24 bg-bg-0 z-10"
+              >
+                <img src="/logo.png" alt="NSDC Logo" class="w-12 h-12 object-contain animate-logo-load" />
+                <span class="text-fg-1 font-mono text-[10px] uppercase tracking-[0.2em] mt-4">
+                  Loading Registration Form...
+                </span>
+              </div>
               <iframe
                 src={finalUrl}
-                class="w-full h-full    "
+                class="w-full h-full border-none"
                 title={pageTitle}
-              >
-                Loading...
-              </iframe>
+                onload="document.getElementById('iframe-loader-reg').style.display='none'"
+              />
             </div>
           </div>
         </div>
@@ -239,13 +259,23 @@ const formattedDate = event ? formatDate(event.date) : null;
           class="w-full flex flex-col items-center justify-center bg-bg-0 min-h-[80vh] py-12"
           style={{ height: height }}
         >
-          <iframe
-            src={finalUrl}
-            class="w-full h-full border-none"
-            title={pageTitle}
-          >
-            Loading...
-          </iframe>
+          <div class="relative w-full h-full">
+            <div
+              id="iframe-loader-generic"
+              class="absolute inset-0 flex flex-col items-center pt-24 bg-bg-0 z-10"
+            >
+              <img src="/logo.png" alt="NSDC Logo" class="w-12 h-12 object-contain animate-logo-load" />
+              <span class="text-fg-1 font-mono text-[10px] uppercase tracking-[0.2em] mt-4">
+                Loading Form...
+              </span>
+            </div>
+            <iframe
+              src={finalUrl}
+              class="w-full h-full border-none"
+              title={pageTitle}
+              onload="document.getElementById('iframe-loader-generic').style.display='none'"
+            />
+          </div>
         </section>
       )}
     </Layout>
