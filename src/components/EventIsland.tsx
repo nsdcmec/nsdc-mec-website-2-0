@@ -36,11 +36,14 @@ export default function EventsIsland(props: Props) {
       return null;
     const ts = parseEventDate(dateStr);
     if (ts === 0) return null;
-    return new Date(ts).toLocaleTimeString("en-US", {
+    const time= new Date(ts).toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
       hour12: true,
+      timeZone: "Asia/Kolkata"
     });
+    if (time === "12:00 PM") return null;
+    return time;
   };
 
   const processedData = createMemo(() => {

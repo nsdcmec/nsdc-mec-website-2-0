@@ -101,7 +101,7 @@ export default function HeroClient(props: Props) {
                   <HeroTextSplit
                     index={2}
                     as="h2"
-                    class="text-fg-1 font-medium tracking-tight"
+                    class="text-fg-1 font-medium tracking-tight font-sans"
                     style="font-size: clamp(1.25rem,min(5dvw,10dvh),2.4rem)"
                     text={props.config.subtitle || "National Students Data Corps"}
                   />
@@ -161,7 +161,7 @@ export default function HeroClient(props: Props) {
                 <HeroTextSplit
                   index={2}
                   as="h2"
-                  class="text-fg-1 mt-1 font-serif"
+                  class="text-fg-1 mt-1 font-sans"
                   style="font-size: clamp(0.9rem,min(4dvw,7dvh),1.8rem)"
                   text={props.config.subtitle || "MEC Chapter"}
                 />
