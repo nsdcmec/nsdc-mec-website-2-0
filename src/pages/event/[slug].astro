@@ -17,12 +17,13 @@ if (!event) {
   return Astro.redirect("/404");
 }
 
+const eventTs = parseEventDate(event.date);
 const formattedDate = formatDate(event.date);
 
 const formattedTime = (() => {
   if (!event.date || (!event.date.includes(":") && !event.date.includes("T")))
     return null;
-  const ts = parseEventDate(event.date);
+  const ts = eventTs;
   if (ts === 0) return null;
   return new Date(ts).toLocaleTimeString("en-US", {
     hour: "numeric",
@@ -40,11 +41,10 @@ const metaDescription = event.description
   : undefined;
 
 const currentStatus = (() => {
-  const ts = parseEventDate(event.date);
+  const ts = eventTs;
   const now = new Date().getTime();
   const oneYearAgo = now - 365 * 24 * 60 * 60 * 1000;
 
-  const meta = event.metadata || {};
   const hero = meta.hero_config;
   const startTs = hero?.start_date ? parseEventDate(hero.start_date) : ts;
   const endTs = hero?.end_date ? parseEventDate(hero.end_date) : 0;
@@ -93,7 +93,7 @@ const currentStatus = (() => {
           )}
 {
               formattedTime && (
-<span class="text-[10px] md:text-xs font-mono font-bold text-fg-1 uppercase tracking-widest">
+<span class="client-time text-[10px] md:text-xs font-mono font-bold text-fg-1 uppercase tracking-widest" data-time-ts={eventTs}>
             , {formattedTime}
           </span>
                 
@@ -107,16 +107,24 @@ const currentStatus = (() => {
           )}
         </div>
       </div>
-      {currentStatus !== "past" && event.link && (
+      {event.report_url ? (
         <a
-          href={event.link}
-          target={getTarget(event.link)}
-          rel={getRel(event.link)}
+          href={`/report/${slugify(event.title)}`}
           class="block w-full py-2.5 mt-1 text-center text-xs font-bold uppercase tracking-widest bg-primary text-primary-fg hover:bg-fg-0 hover:text-bg-0 transition-colors border-2 border-primary hover:border-fg-0"
         >
-
-                    {event.button_text || "Register Now"}
+          View Event Report
         </a>
+      ) : (
+        currentStatus !== "past" && event.link && (
+          <a
+            href={event.link}
+            target={getTarget(event.link)}
+            rel={getRel(event.link)}
+            class="block w-full py-2.5 mt-1 text-center text-xs font-bold uppercase tracking-widest bg-primary text-primary-fg hover:bg-fg-0 hover:text-bg-0 transition-colors border-2 border-primary hover:border-fg-0"
+          >
+            {event.button_text || "Register Now"}
+          </a>
+        )
       )}
       {
         meta.extra_links && meta.extra_links.length > 0 && (
@@ -201,7 +209,7 @@ const currentStatus = (() => {
                Time 
               </span>
               <span
-                class=" font-bold text-fg-0 uppercase tracking-tight"
+                class="client-time font-bold text-fg-0 uppercase tracking-tight" data-time-ts={eventTs}
               >
                 {formattedTime}
               </span>
@@ -238,13 +246,13 @@ const currentStatus = (() => {
           {/* Registration / Contacts */}
           <div class="pt-6 md:pt-8 border-t-2 border-fg-0/10 flex flex-col gap-6 md:gap-8">
             {
-              currentStatus === "past" && (
+              (currentStatus === "past" || event.report_url) && (
                 <div class="flex flex-col border-2 border-fg-0 p-4 md:p-6 bg-bg-1">
                   <h3 class=" font-bold uppercase tracking-tighter text-fg-0 mb-1 md:mb-2">
-                    Event Ended
+                    {event.report_url ? "Event Concluded" : "Event Ended"}
                   </h3>
                   <p class="text-fg-1 text-xs font-sans mb-3 md:mb-4">
-                    This event has already concluded.
+                    {event.report_url ? "The report for this event is now available." : "This event has already concluded."}
                   </p>
                   {event.report_url && (
                     <a
@@ -290,7 +298,7 @@ const currentStatus = (() => {
               }
 
               {
-                currentStatus !== "past" && event.link && (
+                !event.report_url && currentStatus !== "past" && event.link && (
                   <a
                     href={event.link}
                     target={getTarget(event.link)}
@@ -630,4 +638,21 @@ const currentStatus = (() => {
       )
     }
   </div>
+
+  <script is:inline>
+    // Adjust event times to local timezone
+    document.querySelectorAll('.client-time').forEach((el) => {
+      const ts = parseInt(el.getAttribute('data-time-ts'));
+      if (ts && !isNaN(ts)) {
+        const localTime = new Date(ts).toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true,
+        });
+        // Keep the comma if it exists in the original text (for mobile)
+        const hasComma = el.textContent.trim().startsWith(',');
+        el.textContent = (hasComma ? ', ' : '') + localTime;
+      }
+    });
+  </script>
 </Layout>
