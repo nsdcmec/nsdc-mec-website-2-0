@@ -6,10 +6,8 @@ const isDev = process.env.NODE_ENV === "development";
 export const onRequest = defineMiddleware(async (context, next) => {
   const { request, url } = context;
 
-  let cacheKey = url.pathname;
-  if (cacheKey.length > 1 && cacheKey.endsWith("/")) {
-    cacheKey = cacheKey.slice(0, -1);
-  }
+  // Safer cache key formulation: pathname only, no query params, stripped trailing slash
+  let cacheKey = url.pathname.replace(/\/$/, "") || "/";
 
   if (
     cacheKey.includes(".") ||

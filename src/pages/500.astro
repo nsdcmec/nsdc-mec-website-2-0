@@ -1,0 +1,189 @@
+---
+import Layout from "../layouts/Layout.astro";
+import HeroAnimation from "../components/HeroAnimation";
+---
+
+<Layout
+  title="500 | NSDC MEC"
+  links={[]}
+  injections={undefined}
+  colors={undefined}
+  description="System offline. Training in progress."
+  defaultTheme="light"
+>
+  <style is:inline>
+    [transition-persist="header"],
+    header,
+    footer,
+    #top-injection-banner {
+      display: none !important;
+    }
+
+    html,
+    body {
+      overflow: hidden !important;
+      height: 100% !important;
+    }
+    @keyframes slow-invert {
+      0%,
+      100% {
+        filter: invert(0);
+      }
+      45%,
+      55% {
+        filter: invert(1);
+      }
+    }
+
+    .slow-invert-pulse {
+      animation: slow-invert 80s ease-in-out infinite;
+    }
+  </style>
+
+  <div
+    class="relative w-full h-screen flex flex-col overflow-hidden bg-bg-0 slow-invert-pulse"
+  >
+    <!-- Background Animation Layer -->
+    <div class="absolute inset-0 pointer-events-none z-0 opacity-30">
+      <HeroAnimation variant="data-stream" client:load />
+    </div>
+
+    <!-- Main Content Layer -->
+    <div
+      class="relative z-10 flex-grow flex flex-col items-center justify-center text-center px-4"
+    >
+      <div class="max-w-5xl mx-auto w-full flex flex-col items-center">
+        <!-- Large 500 Text Background -->
+        <div class="mb-4">
+          <span
+            class="text-[10rem] md:text-[15rem] font-black tracking-tighter text-fg-0 font-sans leading-none uppercase opacity-10"
+          >
+            500
+          </span>
+        </div>
+
+        <div class="flex flex-col items-center -mt-20 md:-mt-32 w-full">
+          <!-- Bigger Sad Kaomoji -->
+          <div
+            class="text-6xl md:text-7xl font-mono text-primary mb-6 font-bold animate-pulse tracking-widest"
+          >
+            (&gt;_&lt;)
+          </div>
+
+          <!-- Main Title -->
+          <h1
+            class="text-6xl sm:text-7xl md:text-9xl font-black tracking-tighter text-fg-0 font-sans leading-[0.95] mb-8 uppercase"
+          >
+            NSDCMEC
+          </h1>
+          <p
+            class="text-xs sm:text-sm font-mono uppercase tracking-[0.25em] text-fg-1/60 -mt-4 mb-8"
+          >
+            We're having trouble connecting to the data stream.
+          </p>
+
+          <!-- Cycling Quotes Container -->
+          <div
+            class="flex flex-col items-center justify-center min-h-[140px] mb-10 max-w-3xl px-4 w-full"
+          >
+            <h2
+              id="quote-text"
+              class="text-sm text-fg-1 font-medium tracking-tight italic transition-opacity duration-500 opacity-100"
+            >
+              "I finally figured out why github is going down. They are training
+              on my code."
+            </h2>
+            <p
+              id="quote-author"
+              class="text-sm font-bold uppercase tracking-[0.2em] text-primary mt-6 transition-opacity duration-500 opacity-100"
+            >
+              - ThePrimeagen
+            </p>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex flex-col sm:flex-row gap-4 mt-2">
+            <button
+              onclick="window.location.reload()"
+              class="px-12 py-4 bg-primary text-primary-fg font-bold font-sans text-xs uppercase tracking-[0.3em] hover:opacity-90 transition-all duration-300 cursor-pointer"
+            >
+              Try Again
+            </button>
+
+            <a
+              href="https://www.instagram.com/nsdcmec"
+              class="px-12 py-4 border-2 border-fg-0/20 text-fg-0 font-bold font-sans text-xs uppercase tracking-[0.3em] hover:border-fg-0 hover:bg-fg-0 hover:text-bg-0 transition-all duration-300"
+              target="_blank"
+            >
+              @nsdcmec
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script is:inline>
+    const quotes = [
+      {
+        text: "I finally figured out why github is going down. They are training on my code.",
+        author: "ThePrimeagen",
+      },
+      {
+        text: "We might be 6-12 months away from models doing all of what software engineers do end-to-end.",
+        author: "Dario Amodei",
+      },
+      {
+        text: "AI is overhyped in the short term and still underappreciated in the medium to long term.",
+        author: "Demis Hassabis",
+      },
+      { text: "Attention is all you need.....", author: "Vaswani et al." },
+      {
+        text: "Every time we scale things up, things get better. All of a sudden, new capabilities emerge...",
+        author: "Jeff Dean",
+      },
+      {
+        text: "AI is intrinsically good, because the effect of AI is to make people smarter.",
+        author: "Yann LeCun",
+      },
+      {
+        text: "Step one, solve intelligence; step two, use it to solve everything else.",
+        author: "Demis Hassabis",
+      },
+      {
+        text: "You are absolutely right",
+        author: "(you know it)",
+      },
+      {
+        text: "Every nine months I hear that [AI will do all coding]. So I'm like, well, it must be at least pretty close... And I go and look and they're like, wow, this thing sucked.",
+        author: "Casey Muratori",
+      },
+      {
+        text: "Hating AI is totally valid! It doesn't have to be useless to hate it :)",
+        author: "Casey Muratori",
+      },
+    ];
+
+    let currentIndex = 0;
+    const textEl = document.getElementById("quote-text");
+    const authorEl = document.getElementById("quote-author");
+
+    if (textEl && authorEl) {
+      setInterval(() => {
+        // 1. Fade out
+        textEl.style.opacity = "0";
+        authorEl.style.opacity = "0";
+
+        // 2. Wait for CSS fade transition to finish (500ms), then swap text and fade in
+        setTimeout(() => {
+          currentIndex = (currentIndex + 1) % quotes.length;
+          textEl.textContent = `"${quotes[currentIndex].text}"`;
+          authorEl.textContent = `- ${quotes[currentIndex].author}`;
+
+          textEl.style.opacity = "1";
+          authorEl.style.opacity = "1";
+        }, 500);
+      }, 5500); // Cycle every 5.5 seconds
+    }
+  </script>
+</Layout>

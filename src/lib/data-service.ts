@@ -89,19 +89,14 @@ async function fetchSiteConfig() {
    MAIN LOADER
    ========================================= */
 
-const loadNeonData = async () => {
-  console.log("Loading data from Neon DB...");
+const loadNeonData = async (
+  retries = 3,
+  delayMs = 2500,
+): Promise<{ siteData: SiteData; routes: ShortUrl[] }> => {
+  console.log(`Loading data from Neon DB... (Retries left: ${retries})`);
 
   try {
-    const [
-      announcements,
-      events,
-      teams,
-      links,
-      shortLinks,
-      resources,
-      configMap,
-    ] = await Promise.all([
+    const results = await Promise.allSettled([
       fetchAnnouncements(),
       fetchEvents(),
       fetchTeams(),
@@ -110,6 +105,40 @@ const loadNeonData = async () => {
       fetchResources(),
       fetchSiteConfig(),
     ]);
+
+    // Check if any critical fetch failed
+    const failed = results.filter((r) => r.status === "rejected");
+
+    if (failed.length > 0) {
+      if (retries > 0) {
+        // If we have retries left, wait and try again
+        console.warn(
+          `[Neon] ${failed.length} queries failed. Retrying in ${delayMs}ms...`,
+        );
+        await new Promise((res) => setTimeout(res, delayMs));
+        return loadNeonData(retries - 1, delayMs);
+      } else {
+        throw new Error(
+          `CRITICAL: ${failed.length} database queries failed after all retries.`,
+        );
+      }
+    }
+
+    const getResult = <T>(result: PromiseSettledResult<T>, fallback: T): T => {
+      if (result.status === "fulfilled") return result.value;
+      return fallback;
+    };
+
+    const announcements = getResult(results[0], []) as Announcement[];
+    const events = getResult(results[1], []) as Event[];
+    const teams = getResult(results[2], []) as TeamYear[];
+    const links = getResult(results[3], []) as Link[];
+    const shortLinks = getResult(results[4], []) as ShortUrl[];
+    const resources = getResult(results[5], []) as Resource[];
+    const configMap = getResult(results[6], new Map<string, any>()) as Map<
+      string,
+      any
+    >;
 
     // Parse Configs
     const about = (configMap.get("about") || {
@@ -122,7 +151,7 @@ const loadNeonData = async () => {
       desc: "",
     }) as HeroConfig;
     const heroMain = (configMap.get("hero-main") || {
-      type: "",
+      type: "none",
       src: "",
       link: "",
       buttontext: "",
@@ -134,11 +163,7 @@ const loadNeonData = async () => {
       items: [],
     }) as TeamMainConfig;
     const theme = (configMap.get("default-theme") || "light") as string;
-
     const colors = configMap.get("theme_colors") as ThemeColors | undefined;
-
-    // Explicitly cast or parse top_html.
-    // It comes from JSONB, so it should be the object already if stored as such.
 
     const injections: GlobalInjections = {
       top_html: configMap.get("top-html"),
@@ -166,7 +191,11 @@ const loadNeonData = async () => {
 
     return { siteData, routes: shortLinks };
   } catch (error) {
+    // This catch block will now successfully catch the "CRITICAL" error we threw above.
     console.error("Failed to load data from Neon:", error);
+
+    // We already handled retries inside the try block for Promise.allSettled,
+    // so if we reach here, we just throw the error up to Astro.
     throw error;
   }
 };
