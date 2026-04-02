@@ -22,6 +22,7 @@
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.13",
     "@types/pg": "^8.16.0",
+    "baseline-browser-mapping": "^2.10.13",
     "prettier-plugin-astro": "^0.14.1",
     "tailwindcss": "^4.1.13",
     "typescript": "^5.9.3"
