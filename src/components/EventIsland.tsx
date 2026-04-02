@@ -36,11 +36,11 @@ export default function EventsIsland(props: Props) {
       return null;
     const ts = parseEventDate(dateStr);
     if (ts === 0) return null;
-    const time= new Date(ts).toLocaleTimeString("en-US", {
+    const time = new Date(ts).toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
       hour12: true,
-      timeZone: "Asia/Kolkata"
+      timeZone: "Asia/Kolkata",
     });
     if (time === "12:00 PM") return null;
     return time;
@@ -287,7 +287,7 @@ export default function EventsIsland(props: Props) {
         <div class="flex flex-col gap-3 p-4 border-b border-fg-0/10">
           <div class="flex justify-between items-center">
             <h1 class="text-2xl font-bold uppercase tracking-tighter">
-              {props.isMinimal ? "Featured Events" : "Events"}
+              {props.isMinimal ? "Recent Events" : "Events"}
             </h1>
             <Show when={!props.isMinimal}>
               <div class="flex items-center gap-3">
@@ -436,7 +436,7 @@ export default function EventsIsland(props: Props) {
                   style={{ "view-transition-name": "events-title" }}
                   class="text-4xl md:text-5xl font-bold text-fg-0 uppercase tracking-tighter leading-tight mb-8"
                 >
-                  {props.isMinimal ? "Featured Events" : "Events"}
+                  {props.isMinimal ? "Recent Events" : "Events"}
                 </h1>
 
                 <Show when={!props.isMinimal}>
@@ -518,7 +518,9 @@ export default function EventsIsland(props: Props) {
                           <Show when={items().length > 0}>
                             <li>
                               <div class="py-1 pl-4 border-l-2 border-transparent -ml-[2px] text-[10px] font-bold uppercase tracking-[0.2em] text-fg-1/70 mb-2">
-                                {group === "happening" ? "Happening Now" : group}
+                                {group === "happening"
+                                  ? "Happening Now"
+                                  : group}
                               </div>
                               <ul class="flex flex-col">
                                 <For each={items()}>
@@ -599,7 +601,9 @@ export default function EventsIsland(props: Props) {
                             <div class="md:sticky  md:top-10 z-30 bg-bg-0 py-2">
                               <div class="flex items-center gap-4 border-b-2 border-fg-0/10">
                                 <h2 class="text-2xl font-bold uppercase tracking-widest text-fg-0 pb-2">
-                                  {group === "happening" ? "Happening Now" : group}
+                                  {group === "happening"
+                                    ? "Happening Now"
+                                    : group}
                                 </h2>
                               </div>
                             </div>
@@ -623,7 +627,11 @@ export default function EventsIsland(props: Props) {
                                     id={`event-${event.id}`}
                                     data-index={index()}
                                     onClick={(e) => {
-                                      if (event.custom_html || (e.target as HTMLElement).closest("a")) return;
+                                      if (
+                                        event.custom_html ||
+                                        (e.target as HTMLElement).closest("a")
+                                      )
+                                        return;
                                       window.location.href = `/event/${slugify(event.title)}`;
                                     }}
                                   >
@@ -648,8 +656,8 @@ export default function EventsIsland(props: Props) {
                                       <div
                                         class={`absolute inset-0 backdrop-blur-[30px] ${isUpcoming ? "bg-bg-0/50" : "bg-bg-0/70"} z-0 pointer-events-none`}
                                       />
-                                      <div class="grid md:grid-cols-2 relative z-10">
-                                        <div class="p-4 max-w-80 md:max-w-none mx-auto md:pr-0 overflow-hidden aspect-square">
+                                      <div class="grid lg:grid-cols-2 relative z-10">
+                                        <div class="p-4 max-w-80 lg:max-w-none mx-auto lg:pr-0 overflow-hidden aspect-square">
                                           <Show
                                             when={event.image_url}
                                             fallback={
@@ -661,14 +669,19 @@ export default function EventsIsland(props: Props) {
                                             <img
                                               src={event.image_url as string}
                                               alt={event.title}
-                                              class="w-full h-full transition-transform duration-700 "
+                                              class="w-full h-full object-cover transition-transform duration-700 "
                                             />
                                           </Show>
                                         </div>
 
-                                        <div class="flex flex-col p-4 md:p-6">
-                                          <div class="flex items-center md:gap-3 md:mb-6 gap-2 mb-4 flex-wrap">
-                                            <Show when={event.computedStatus === "happening"}>
+                                        <div class="flex flex-col p-4 lg:p-6">
+                                          <div class="flex items-center lg:gap-3 lg:mb-6 gap-2 mb-4 flex-wrap">
+                                            <Show
+                                              when={
+                                                event.computedStatus ===
+                                                "happening"
+                                              }
+                                            >
                                               <span class="text-[9px] font-bold bg-primary text-primary-fg px-2 py-0.5 rounded-sm uppercase tracking-wider">
                                                 Happening Now
                                               </span>
@@ -676,14 +689,14 @@ export default function EventsIsland(props: Props) {
                                             </Show>
                                             <Show when={formatDate(event.date)}>
                                               <span
-                                                class={`text-xs font-mono font-bold uppercase md:tracking-widest ${["upcoming", "happening"].includes(event.computedStatus) ? "text-primary" : "text-fg-1"}`}
+                                                class={`text-xs font-mono font-bold uppercase lg:tracking-widest ${["upcoming", "happening"].includes(event.computedStatus) ? "text-primary" : "text-fg-1"}`}
                                               >
                                                 {formatDate(event.date)}
                                               </span>
                                             </Show>
                                             <span class="w-[4px] h-[4px] bg-fg-0/20 rounded-full"></span>
                                             {event.venue && (
-                                              <span class="text-xs font-mono font-bold text-fg-1 uppercase md:tracking-widest">
+                                              <span class="text-xs font-mono font-bold text-fg-1 uppercase lg:tracking-widest">
                                                 {event.venue}
                                               </span>
                                             )}
@@ -694,17 +707,17 @@ export default function EventsIsland(props: Props) {
                                             )}
                                           </div>
 
-                                          <h3 class="font-bold text-fg-0 uppercase tracking-tighter mb-2 md:mb-4 text-2xl md:text-3xl leading-[1.1]">
+                                          <h3 class="font-bold text-fg-0 uppercase tracking-tighter mb-2 lg:mb-4 text-2xl lg:text-3xl leading-[1.1]">
                                             {event.title}
                                           </h3>
 
                                           <Show when={event.description}>
-                                            <div class="mb-4 md:mb-8">
-                                              <p class="text-sm md:text-base text-fg-1 font-sans line-clamp-4 opacity-90">
+                                            <div class="mb-4 lg:mb-8">
+                                              <p class="text-sm lg:text-base text-fg-1 font-sans line-clamp-4 opacity-90">
                                                 {event.description}
                                               </p>
                                               {formatTime(event.date) && (
-                                                <p class="text-[10px] md:text-xs font-mono font-bold text-primary uppercase tracking-widest mt-2 flex items-center gap-1.5">
+                                                <p class="text-[10px] lg:text-xs font-mono font-bold text-primary uppercase tracking-widest mt-2 flex items-center gap-1.5">
                                                   time: {formatTime(event.date)}
                                                 </p>
                                               )}
@@ -719,13 +732,18 @@ export default function EventsIsland(props: Props) {
                                               <span>View Details</span>
                                               <span class="absolute bottom-0 right-0 h-[2px] w-full bg-primary transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover/card:scale-x-100 group-hover/card:origin-left" />
                                             </a>
-                                            <For each={event.metadata?.extra_links || []}>
+                                            <For
+                                              each={
+                                                event.metadata?.extra_links ||
+                                                []
+                                              }
+                                            >
                                               {(extra) => (
                                                 <a
                                                   href={extra.link}
                                                   target={getTarget(extra.link)}
                                                   rel={getRel(extra.link)}
-                                                  class="relative group text-xs font-bold uppercase tracking-widest text-primary hover:text-fg-0 transition-colors py-2 pl-4  "
+                                                  class="relative group text-xs font-bold uppercase tracking-widest text-primary hover:text-fg-0 transition-colors py-2   "
                                                 >
                                                   <span>{extra.title}</span>
                                                   <span class="absolute bottom-0 right-0 h-[2px] w-full bg-fg-0 transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover:scale-x-100 group-hover:origin-left" />
@@ -735,7 +753,7 @@ export default function EventsIsland(props: Props) {
                                             <Show when={event.report_url}>
                                               <a
                                                 href={`/report/${slugify(event.title)}`}
-                                                class="relative group text-xs font-bold uppercase tracking-widest text-fg-1 hover:text-fg-0 transition-colors py-2 pl-4 border-l-2 border-bg-2"
+                                                class="relative group text-xs font-bold uppercase tracking-widest text-fg-1 hover:text-fg-0 transition-colors py-2   border-bg-2"
                                               >
                                                 <span>Read Report</span>
                                                 <span class="absolute bottom-0 right-0 h-[2px] w-full bg-fg-0 transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover:scale-x-100 group-hover:origin-left" />
