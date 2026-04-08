@@ -91,6 +91,7 @@ export interface EventMetadata {
   fees?: Fee[];
   hero_config?: HeroEventConfig;
   extra_links?: ExtraLink[];
+  highlights?: CarouselItem[];
 }
 
 export interface Event {

@@ -52,10 +52,13 @@ const potentialHeroEvents = data.events.filter((e) => {
 
   <EventIsland events={data.events} isMinimal={true} client:load />
 
-  <TeamCarousel
-    items={data.config.teamMain.items}
-    title={data.config.teamMain.title}
-    subtitle={data.config.teamMain.subtitle}
-    client:load
-  />
+  <div class="py-16 md:py-24">
+    <TeamCarousel
+      items={data.config.teamMain.items}
+      title={data.config.teamMain.title}
+      subtitle={data.config.teamMain.subtitle}
+      isTeamCarousel
+      client:load
+    />
+  </div>
 </Layout>

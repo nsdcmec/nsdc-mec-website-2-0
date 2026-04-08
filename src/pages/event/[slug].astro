@@ -4,6 +4,7 @@ import { dataService } from "../../lib/data-service";
 import { parseEventDate, formatDate } from "../../lib/date-utils";
 import { slugify } from "../../lib/slugify";
 import { getTarget, getRel } from "../../lib/link-utils";
+import TeamCarousel from "../../components/TeamCarousel";
 
 const { slug } = Astro.params;
 const data = await dataService.getInitialData();
@@ -422,6 +423,27 @@ const currentStatus = (() => {
             }
           </div>
         </section>
+{
+      meta.highlights && meta.highlights.length > 0 && (
+<section class="space-y-4 pt-2 md:pt-0">
+          <h2
+            class="text-2xl font-bold uppercase tracking-tighter text-fg-0 border-b-2 border-fg-0 pb-2"
+          >
+            Highlights
+          </h2>
+          <TeamCarousel
+          items={meta.highlights}
+          title="EVENT HIGHLIGHTS"
+          subtitle={event.title}
+          showExploreLink={false}
+          client:load
+        />
+
+        </section>
+
+              )
+    }
+
 
         {/* Mobile Registration Details (Moved after About) */}
         <div class="md:hidden flex flex-col gap-4 pt-2">
@@ -625,10 +647,12 @@ const currentStatus = (() => {
           }
         </div>
 
+
         {/* End of Main Content Area */}
       </div>
     </div>
 
+    
     {
       event.custom_html && (
         <div

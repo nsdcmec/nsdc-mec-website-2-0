@@ -12,6 +12,7 @@ interface TeamCarouselProps {
   items: CarouselItem[];
   title?: string;
   subtitle?: string;
+  isTeamCarousel?: boolean;
 }
 
 function CarouselSlide(props: {
@@ -121,16 +122,20 @@ export default function TeamCarousel(props: TeamCarouselProps) {
   });
 
   return (
-    <section class="py-16 lg:py-24 bg-bg-0">
+    <section class=" bg-bg-0">
       <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-        <div class="mb-12">
-          <p class="text-sm font-bold font-mono tracking-[0.2em] text-fg-1 uppercase mb-2">
-            {props.subtitle || "NSDC CORE"}
-          </p>
-          <h2 class="text-5xl lg:text-7xl font-sans font-bold text-fg-0 uppercase tracking-tighter">
-            {props.title || "OUR TEAM"}
-          </h2>
-        </div>
+        <Show
+          when={props.isTeamCarousel}
+        >
+          <div class="mb-12">
+            <p class="text-sm font-bold font-mono tracking-[0.2em] text-fg-1 uppercase mb-2">
+              {props.subtitle || "NSDC CORE"}
+            </p>
+            <h2 class="text-5xl lg:text-7xl font-sans font-bold text-fg-0 uppercase tracking-tighter">
+              {props.title || "OUR TEAM"}
+            </h2>
+          </div>
+        </Show>
 
         {/* Carousel Frame */}
         <div
@@ -284,14 +289,16 @@ export default function TeamCarousel(props: TeamCarouselProps) {
           )}
         </div>
 
-        <div class="mt-8 text-center">
-          <a
-            href="/teams"
-            class="inline-block py-4 px-10 text-xs font-bold font-mono tracking-widest uppercase bg-fg-0 text-bg-0 hover:bg-primary transition-colors duration-200"
-          >
-            Explore Members
-          </a>
-        </div>
+        <Show when={props.isTeamCarousel}>
+          <div class="mt-8 text-center">
+            <a
+              href="/teams"
+              class="inline-block py-4 px-10 text-xs font-bold font-mono tracking-widest uppercase bg-fg-0 text-bg-0 hover:bg-primary transition-colors duration-200"
+            >
+              Explore Members
+            </a>
+          </div>
+        </Show>
       </div>
     </section>
   );
